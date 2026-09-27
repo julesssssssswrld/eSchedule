@@ -1,0 +1,13 @@
+# Normalize line endings to LF in the repo
+* text=auto eol=lf
+
+# Windows shell scripts stay CRLF
+*.bat text eol=crlf
+
+# Binaries — no EOL conversion
+*.ttf binary
+*.webp binary
+*.png binary
+*.jar binary
+*.keystore binary
+*.jks binary

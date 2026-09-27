@@ -1,0 +1,29 @@
+# ── Design assets (not tracked in source control) ──────────────────────────────
+frames/
+svg assets/
+
+# ── Android build artefacts ─────────────────────────────────────────────────────
+app/build/
+app/app/build/
+app/**/.gradle/
+app/.gradle/
+
+# ── Gradle wrapper cache / local config ─────────────────────────────────────────
+app/local.properties
+app/gradle.properties.local
+
+# ── IDE files ───────────────────────────────────────────────────────────────────
+.idea/
+*.iml
+*.iws
+*.ipr
+.DS_Store
+Thumbs.db
+
+# ── Android release keystores ────────────────────────────────────────────────────
+*.jks
+*.keystore
+
+# ── Misc ────────────────────────────────────────────────────────────────────────
+*.log
+*.tmp
