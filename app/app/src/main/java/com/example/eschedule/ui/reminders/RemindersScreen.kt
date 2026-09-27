@@ -1,6 +1,7 @@
 package com.example.eschedule.ui.reminders
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -14,7 +15,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -25,6 +25,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.example.eschedule.theme.DividerColor
 import com.example.eschedule.theme.TextTertiary
 import com.example.eschedule.theme.UepBlue
@@ -81,8 +82,11 @@ fun RemindersScreen(
 
             Spacer(Modifier.height(16.dp))
 
-            // Filter chips
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            // Filter chips — horizontally scrollable so they never wrap
+            Row(
+                modifier = Modifier.horizontalScroll(rememberScrollState()),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
                 FILTERS.forEach { filter ->
                     FilterChip(
                         label = filter,
@@ -122,7 +126,7 @@ fun RemindersScreen(
             if (selectedFilter == "All" || selectedFilter == "Completed") {
                 Text(
                     text = "Completed & Won't Do",
-                    style = MaterialTheme.typography.bodySmall,
+                    fontSize = 12.sp,
                     color = TextTertiary,
                     modifier = Modifier.padding(bottom = 8.dp),
                 )
@@ -149,12 +153,11 @@ fun RemindersScreen(
             Spacer(Modifier.height(96.dp))
         }
 
-        // FAB
         EScheduleFab(
             onClick = onAddReminder,
             modifier = Modifier
                 .align(Alignment.BottomEnd)
-                .padding(end = 20.dp, bottom = 88.dp),
+                .padding(end = 20.dp, bottom = 100.dp),
         )
     }
 }

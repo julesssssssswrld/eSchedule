@@ -49,7 +49,7 @@ private val HOUR_HEIGHT  = 60.dp
 private val LABEL_W      = 60.dp     // wide enough for "12:00 PM"
 private const val TIME_START     = 0   // midnight — full 24h
 private const val TIME_END       = 24
-private const val SCROLL_TO_HOUR = 7   // default view: 7 AM
+private const val SCROLL_TO_HOUR = 6   // default view: 6 AM
 
 /** One block on the weekly schedule grid */
 data class ClassBlock(
@@ -266,19 +266,20 @@ private fun androidx.compose.foundation.layout.RowScope.WeeklyGrid(
                     .fillMaxWidth()
                     .offset(y = offsetDp),
             ) {
-                // Red dot at left edge
+                // Red dot — offset -4dp left so it straddles the label/grid boundary
                 Box(
                     modifier = Modifier
+                        .offset(x = (-4).dp)
                         .size(8.dp)
                         .background(CurrentTimeIndicator, CircleShape)
                         .align(Alignment.CenterStart),
                 )
-                // Red horizontal line across full width
+                // Red line starts after the dot
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(1.dp)
-                        .padding(start = 4.dp)           // starts just after the dot
+                        .height(1.5.dp)
+                        .padding(start = 5.dp)
                         .background(CurrentTimeIndicator)
                         .align(Alignment.CenterStart),
                 )
