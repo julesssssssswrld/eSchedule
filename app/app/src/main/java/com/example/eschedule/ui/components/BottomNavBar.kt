@@ -53,7 +53,7 @@ private data class NavItem(
 )
 
 // ── Design tokens ──────────────────────────────────────────────────────────────
-private val PillBg       = Color(0x99000000)        // black 60%
+private val PillBg       = Color(0x80000000)        // black 50%
 private val PillBorder   = Color(0x18FFFFFF)
 private val ActiveTint   = NavActiveBlue             // #0088FF when selected
 private val InactiveTint = Color.White               // plain white when idle

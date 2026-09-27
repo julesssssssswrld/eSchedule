@@ -25,7 +25,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.example.eschedule.theme.DividerColor
 import com.example.eschedule.theme.TextTertiary
 import com.example.eschedule.theme.UepBlue
@@ -34,6 +33,7 @@ import com.example.eschedule.ui.components.FilterChip
 import com.example.eschedule.ui.components.PageTitle
 import com.example.eschedule.ui.components.ReminderItemData
 import com.example.eschedule.ui.components.ReminderListItem
+import com.example.eschedule.ui.components.SectionHeader
 import com.example.eschedule.ui.components.appShadow
 
 private val FILTERS = listOf("All", "Today", "Week", "Month", "Completed")
@@ -124,10 +124,8 @@ fun RemindersScreen(
 
             // Completed section
             if (selectedFilter == "All" || selectedFilter == "Completed") {
-                Text(
-                    text = "Completed & Won't Do",
-                    fontSize = 12.sp,
-                    color = TextTertiary,
+                SectionHeader(
+                    title = "Completed",
                     modifier = Modifier.padding(bottom = 8.dp),
                 )
                 Box(

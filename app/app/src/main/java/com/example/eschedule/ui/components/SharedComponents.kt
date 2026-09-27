@@ -1,6 +1,6 @@
 package com.example.eschedule.ui.components
 
-import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
@@ -20,11 +20,13 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.ui.layout.layout
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CheckboxDefaults
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -143,16 +145,20 @@ fun ClassCard(
 
 // ─────────────────────────────────────────────────────────────────────────────
 // StackedClassCards
-// Collapsed: cards fanned in a depth stack (scale + alpha + Y offset).
-//   index 0 = TOP (highest zIndex), subsequent cards peek behind it.
-// Expanded:  cards slide out to natural column positions.
-// Tapping the TOP card toggles; background cards are non-interactive.
+//
+// Each card uses Modifier.layout{} so it reports height = cardHeight + yOffset
+// to the parent Box. This lets the Box grow to EXACTLY accommodate all peeking
+// cards without needing a separate Spacer hack.
+//
+// placeRelativeWithLayer applies scale+alpha in the GPU layer without creating
+// an isolated compositing group that would break Box’s z-ordering.
 // ─────────────────────────────────────────────────────────────────────────────
 
-private val PEEK_DP     : Dp    = 16.dp   // vertical peek per card behind
-private val SCALE_STEP  : Float = 0.03f   // per-layer scale reduction
-private val ALPHA_STEP  : Float = 0.12f   // per-layer opacity reduction
-private const val ESTIMATED_CARD_H = 78f  // approximate card height in dp
+private val PEEK_DP     : Dp    = 16.dp   // vertical peek per depth level
+private val SCALE_STEP  : Float = 0.025f  // scale reduction per depth
+private val ALPHA_STEP  : Float = 0.10f   // alpha reduction per depth
+private const val ESTIMATED_CARD_H = 86f  // dp; used for expanded Y spacing
+private const val EXPAND_GAP       = 12f  // dp gap between expanded cards
 
 @Composable
 fun StackedClassCards(
@@ -163,24 +169,16 @@ fun StackedClassCards(
 
     var expanded by remember { mutableStateOf(false) }
 
-    // Smooth iOS-like easing — no bounce
-    val tweenSpec = tween<Float>(durationMillis = 300, easing = androidx.compose.animation.core.FastOutSlowInEasing)
-    val tweenDp   = tween<Dp>(durationMillis = 300, easing = androidx.compose.animation.core.FastOutSlowInEasing)
+    val tweenSpec = tween<Float>(durationMillis = 300, easing = FastOutSlowInEasing)
 
     Box(modifier = modifier.fillMaxWidth()) {
-        // Draw cards in REVERSE order so that card 0 is drawn LAST = visually on top.
-        // zIndex ensures correct hit testing regardless of draw order.
+        // Iterate in REVERSED order: last card drawn first (lowest z),
+        // front card drawn last (highest z, naturally on top).
         cards.indices.reversed().forEach { index ->
-            val card = cards[index]
-            val depth = index  // 0 = front card, 1 = first behind, ...
+            val depth = index  // 0 = front card
 
-            // Collapsed: each card peeks below the one in front
-            val collapsedY     = depth * PEEK_DP.value
-            val collapsedScale = 1f - depth * SCALE_STEP
-            val collapsedAlpha = (1f - depth * ALPHA_STEP).coerceAtLeast(0.3f)
-
-            // Expanded: spaced out vertically with a comfortable gap
-            val expandedY = depth * (ESTIMATED_CARD_H + 12f)
+            val collapsedY = depth * PEEK_DP.value
+            val expandedY  = depth * (ESTIMATED_CARD_H + EXPAND_GAP)
 
             val animY by animateFloatAsState(
                 targetValue   = if (expanded) expandedY else collapsedY,
@@ -188,44 +186,40 @@ fun StackedClassCards(
                 label         = "y_$index",
             )
             val animScale by animateFloatAsState(
-                targetValue   = if (expanded) 1f else collapsedScale,
+                targetValue   = if (expanded) 1f else (1f - depth * SCALE_STEP),
                 animationSpec = tweenSpec,
                 label         = "scale_$index",
             )
             val animAlpha by animateFloatAsState(
-                targetValue   = if (expanded) 1f else collapsedAlpha,
+                targetValue   = if (expanded) 1f else (1f - depth * ALPHA_STEP).coerceAtLeast(0.6f),
                 animationSpec = tweenSpec,
                 label         = "alpha_$index",
             )
 
             ClassCard(
-                data           = card,
+                data           = cards[index],
                 showExpandHint = index == 0 && cards.size > 1,
                 onClick        = if (index == 0 && cards.size > 1) {
                     { expanded = !expanded }
                 } else null,
-                modifier = Modifier
-                    .zIndex((cards.size - index).toFloat())  // card 0 = highest z
-                    .offset(y = animY.dp)
-                    .graphicsLayer {
-                        scaleX = animScale
-                        alpha  = animAlpha
+                modifier       = Modifier
+                    .zIndex((cards.size - index).toFloat())
+                    .layout { measurable, constraints ->
+                        val placeable = measurable.measure(constraints)
+                        // yPx is the absolute Y position of this card in dp→px
+                        val yPx = animY.dp.roundToPx()
+                        // Report occupied height = card height + y offset so the
+                        // parent Box grows to fit ALL stacked cards exactly.
+                        layout(placeable.width, placeable.height + yPx) {
+                            placeable.placeRelativeWithLayer(x = 0, y = yPx) {
+                                scaleX = animScale
+                                scaleY = animScale
+                                alpha  = animAlpha
+                            }
+                        }
                     },
             )
         }
-
-        // Invisible spacer to reserve correct height so nothing below overlaps
-        val requiredHeight = if (expanded) {
-            (cards.size * ESTIMATED_CARD_H + (cards.size - 1) * 12f).dp
-        } else {
-            (ESTIMATED_CARD_H + (cards.size - 1) * PEEK_DP.value).dp
-        }
-        val animHeight by animateDpAsState(
-            targetValue   = requiredHeight,
-            animationSpec = tweenDp,
-            label         = "stack_height",
-        )
-        Spacer(Modifier.height(animHeight))
     }
 }
 
@@ -293,9 +287,8 @@ fun SectionHeader(
 ) {
     Text(
         text = title,
-        fontSize = 13.sp,
-        fontWeight = FontWeight.SemiBold,
-        color = TextSecondary,
+        style = MaterialTheme.typography.labelMedium,
+        color = TextTertiary,
         letterSpacing = 0.sp,
         modifier = modifier,
     )
@@ -374,7 +367,7 @@ fun EScheduleFab(
         modifier = modifier
             .size(52.dp)
             .appShadow(blur = 12.dp, spread = (-4).dp, cornerRadius = 26.dp)
-            .background(Color(0x99000000), CircleShape)   // black 60% — matches nav pill
+            .background(Color(0x80000000), CircleShape)   // black 50%
             .clip(CircleShape)
             .clickable(
                 interactionSource = remember { MutableInteractionSource() },
