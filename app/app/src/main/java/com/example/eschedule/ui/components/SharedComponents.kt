@@ -1,8 +1,5 @@
 package com.example.eschedule.ui.components
 
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.expandVertically
-import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -25,23 +22,20 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.example.eschedule.theme.DividerColor
 import com.example.eschedule.theme.TextSecondary
 import com.example.eschedule.theme.TextTertiary
 import com.example.eschedule.theme.UepBlue
 
-// ─── Class card (used on Home "Current Class" and "Upcoming Classes") ──────────
+// ─── Class card ────────────────────────────────────────────────────────────────
 
 data class ClassCardData(
     val id: String,
@@ -57,15 +51,13 @@ fun ClassCard(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    var expanded by remember { mutableStateOf(false) }
-
     Box(
         modifier = modifier
             .fillMaxWidth()
-            .shadow(2.dp, RoundedCornerShape(12.dp))
-            .background(Color.White, RoundedCornerShape(12.dp))
-            .clip(RoundedCornerShape(12.dp))
-            .clickable { if (data.isExpandable) expanded = !expanded else onClick() },
+            .appShadow(cornerRadius = 14.dp)
+            .background(Color.White, RoundedCornerShape(14.dp))
+            .clip(RoundedCornerShape(14.dp))
+            .clickable { onClick() },
     ) {
         Row(
             modifier = Modifier.padding(16.dp),
@@ -74,43 +66,46 @@ fun ClassCard(
             // Blue left accent bar
             Box(
                 modifier = Modifier
-                    .width(4.dp)
-                    .height(52.dp)
+                    .width(3.dp)
+                    .height(48.dp)
                     .background(UepBlue, RoundedCornerShape(2.dp)),
             )
             Spacer(Modifier.width(12.dp))
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = data.title,
-                    style = MaterialTheme.typography.titleSmall,
+                    style = MaterialTheme.typography.bodyMedium,
                     fontWeight = FontWeight.SemiBold,
                     color = MaterialTheme.colorScheme.onSurface,
+                    lineHeight = 20.sp,
                 )
-                Spacer(Modifier.height(2.dp))
+                Spacer(Modifier.height(4.dp))
                 Text(
                     text = data.timeRange,
                     style = MaterialTheme.typography.bodySmall,
                     color = TextSecondary,
+                    letterSpacing = 0.sp,
                 )
                 Text(
                     text = data.location,
                     style = MaterialTheme.typography.bodySmall,
                     color = TextTertiary,
+                    letterSpacing = 0.sp,
                 )
             }
             if (data.isExpandable) {
                 Icon(
                     imageVector = AppIcons.Expand,
-                    contentDescription = if (expanded) "Collapse" else "Expand",
-                    tint = TextSecondary,
-                    modifier = Modifier.size(20.dp),
+                    contentDescription = "Expand",
+                    tint = TextTertiary,
+                    modifier = Modifier.size(18.dp),
                 )
             }
         }
     }
 }
 
-// ─── Reminder list item (Home + Reminders screen) ──────────────────────────────
+// ─── Reminder list item ─────────────────────────────────────────────────────────
 
 data class ReminderItemData(
     val id: String,
@@ -145,23 +140,27 @@ fun ReminderListItem(
         Spacer(Modifier.width(12.dp))
         Text(
             text = data.title,
-            style = MaterialTheme.typography.bodyMedium,
+            fontSize = 14.sp,
+            fontWeight = if (data.isCompleted) FontWeight.Normal else FontWeight.Medium,
+            color = if (data.isCompleted) TextTertiary
+                    else MaterialTheme.colorScheme.onSurface,
+            letterSpacing = 0.sp,
             modifier = Modifier.weight(1f),
-            color = if (data.isCompleted) TextTertiary else MaterialTheme.colorScheme.onSurface,
         )
         Text(
             text = data.dueLabel,
-            style = MaterialTheme.typography.bodySmall,
+            fontSize = 12.sp,
             color = TextTertiary,
+            letterSpacing = 0.sp,
         )
         if (showMoreButton) {
             Spacer(Modifier.width(8.dp))
             Icon(
                 imageVector = AppIcons.ThreeDot,
-                contentDescription = "More options",
+                contentDescription = "More",
                 tint = TextTertiary,
                 modifier = Modifier
-                    .size(18.dp)
+                    .size(16.dp)
                     .clickable(
                         interactionSource = remember { MutableInteractionSource() },
                         indication = null,
@@ -172,7 +171,7 @@ fun ReminderListItem(
     }
 }
 
-// ─── Section header ─────────────────────────────────────────────────────────────
+// ─── Section header ──────────────────────────────────────────────────────────────
 
 @Composable
 fun SectionHeader(
@@ -181,13 +180,15 @@ fun SectionHeader(
 ) {
     Text(
         text = title,
-        style = MaterialTheme.typography.headlineMedium,
+        fontSize = 22.sp,
+        fontWeight = FontWeight.Bold,
         color = UepBlue,
+        letterSpacing = (-0.3).sp,
         modifier = modifier,
     )
 }
 
-// ─── Filter chip row (Reminders screen) ─────────────────────────────────────────
+// ─── Filter chip ─────────────────────────────────────────────────────────────────
 
 @Composable
 fun FilterChip(
@@ -196,27 +197,34 @@ fun FilterChip(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val bgColor = if (selected) UepBlue else Color.White
-    val textColor = if (selected) Color.White else TextSecondary
+    val bg    = if (selected) UepBlue else Color.White
+    val fg    = if (selected) Color.White else TextSecondary
+    val bord  = if (selected) Color.Transparent else DividerColor
 
     Box(
         modifier = modifier
             .clip(RoundedCornerShape(50))
-            .background(bgColor)
-            .border(1.dp, if (selected) Color.Transparent else DividerColor, RoundedCornerShape(50))
+            .background(bg)
+            .border(0.5.dp, bord, RoundedCornerShape(50))
             .clickable(
                 interactionSource = remember { MutableInteractionSource() },
                 indication = null,
                 onClick = onClick,
             )
-            .padding(horizontal = 16.dp, vertical = 8.dp),
+            .padding(horizontal = 14.dp, vertical = 7.dp),
         contentAlignment = Alignment.Center,
     ) {
-        Text(text = label, style = MaterialTheme.typography.labelMedium, color = textColor)
+        Text(
+            text = label,
+            fontSize = 12.sp,
+            fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Normal,
+            color = fg,
+            letterSpacing = 0.sp,
+        )
     }
 }
 
-// ─── FAB (floating action button used on Reminders/Classes) ─────────────────────
+// ─── FAB ─────────────────────────────────────────────────────────────────────────
 
 @Composable
 fun EScheduleFab(
@@ -225,9 +233,9 @@ fun EScheduleFab(
 ) {
     Box(
         modifier = modifier
-            .size(52.dp)
-            .shadow(6.dp, CircleShape)
-            .background(TextSecondary.copy(alpha = 0.3f), CircleShape)
+            .size(48.dp)
+            .appShadow(blur = 12.dp, spread = (-4).dp, cornerRadius = 24.dp)
+            .background(Color(0xFF888888).copy(alpha = 0.35f), CircleShape)
             .clip(CircleShape)
             .clickable(onClick = onClick),
         contentAlignment = Alignment.Center,
@@ -236,7 +244,7 @@ fun EScheduleFab(
             imageVector = AppIcons.Add,
             contentDescription = "Add",
             tint = Color.White,
-            modifier = Modifier.size(28.dp),
+            modifier = Modifier.size(26.dp),
         )
     }
 }

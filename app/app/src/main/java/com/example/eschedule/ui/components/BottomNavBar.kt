@@ -3,12 +3,14 @@ package com.example.eschedule.ui.components
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
@@ -25,21 +27,16 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.example.eschedule.ClassesRoute
-import com.example.eschedule.HomeRoute
-import com.example.eschedule.RemindersRoute
-import com.example.eschedule.ScanRoute
-import com.example.eschedule.SettingsRoute
-import com.example.eschedule.theme.AppBackground
-import com.example.eschedule.theme.TextSecondary
+import androidx.compose.ui.unit.sp
+import com.example.eschedule.theme.TextTertiary
 import com.example.eschedule.theme.UepBlue
 import com.example.eschedule.theme.UepYellow
 
-/** The route currently displayed in the main tab area. */
+/** Tab destinations for the main bottom nav. */
 sealed interface TabRoute {
     data object Home : TabRoute
     data object Classes : TabRoute
@@ -53,6 +50,9 @@ private data class NavItem(
     val tab: TabRoute,
 )
 
+// Frosted glass white — enough transparency to feel floating
+private val GlassWhite = Color(0xE6FFFFFF) // ~90% opaque white
+
 @Composable
 fun BottomNavBar(
     currentTab: TabRoute,
@@ -60,42 +60,43 @@ fun BottomNavBar(
     onScanClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val items = remember {
+    val itemsLeft = remember {
         listOf(
-            NavItem("Home", AppIcons.Home, TabRoute.Home),
+            NavItem("Home",    AppIcons.Home,    TabRoute.Home),
             NavItem("Classes", AppIcons.Classes, TabRoute.Classes),
         )
     }
     val itemsRight = remember {
         listOf(
             NavItem("Reminders", AppIcons.Reminder, TabRoute.Reminders),
-            NavItem("Settings", AppIcons.Settings, TabRoute.Settings),
+            NavItem("Settings",  AppIcons.Settings,  TabRoute.Settings),
         )
     }
 
     Box(
         modifier = modifier
             .fillMaxWidth()
-            .navigationBarsPadding(),
+            .navigationBarsPadding()
+            .padding(horizontal = 20.dp, vertical = 12.dp),
         contentAlignment = Alignment.BottomCenter,
     ) {
-        // The pill-shaped nav bar background
+        // ── Glassmorphism pill ────────────────────────────────────────────────
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 8.dp)
                 .height(64.dp)
-                .shadow(8.dp, RoundedCornerShape(32.dp))
-                .background(
-                    color = Color.White.copy(alpha = 0.92f),
+                .appShadow(blur = 10.dp, spread = (-5).dp, cornerRadius = 32.dp)
+                .background(GlassWhite, RoundedCornerShape(32.dp))
+                .border(
+                    width = 0.5.dp,
+                    color = Color.White.copy(alpha = 0.6f),
                     shape = RoundedCornerShape(32.dp),
                 )
                 .padding(horizontal = 8.dp),
             horizontalArrangement = Arrangement.SpaceEvenly,
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            // Left items
-            items.forEach { item ->
+            itemsLeft.forEach { item ->
                 NavTabItem(
                     item = item,
                     isSelected = currentTab == item.tab,
@@ -104,10 +105,9 @@ fun BottomNavBar(
                 )
             }
 
-            // Center scan button placeholder (actual button floats above)
-            Box(modifier = Modifier.weight(1f))
+            // Gap for floating scan button
+            Spacer(Modifier.weight(1f))
 
-            // Right items
             itemsRight.forEach { item ->
                 NavTabItem(
                     item = item,
@@ -118,14 +118,15 @@ fun BottomNavBar(
             }
         }
 
-        // Floating scan FAB
+        // ── Floating scan FAB ─────────────────────────────────────────────────
         Box(
             modifier = Modifier
                 .align(Alignment.BottomCenter)
-                .padding(bottom = 20.dp)
-                .size(60.dp)
-                .shadow(6.dp, CircleShape)
+                .padding(bottom = 8.dp)
+                .size(56.dp)
+                .appShadow(blur = 12.dp, spread = (-4).dp, cornerRadius = 28.dp)
                 .background(UepYellow, CircleShape)
+                .clip(CircleShape)
                 .clickable(
                     interactionSource = remember { MutableInteractionSource() },
                     indication = null,
@@ -137,7 +138,7 @@ fun BottomNavBar(
                 imageVector = AppIcons.Scan,
                 contentDescription = "Scan",
                 tint = UepBlue,
-                modifier = Modifier.size(28.dp),
+                modifier = Modifier.size(26.dp),
             )
         }
     }
@@ -150,10 +151,10 @@ private fun NavTabItem(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val iconTint by animateColorAsState(
-        targetValue = if (isSelected) UepBlue else TextSecondary,
-        animationSpec = tween(durationMillis = 200),
-        label = "nav_tab_tint",
+    val tint by animateColorAsState(
+        targetValue = if (isSelected) UepBlue else TextTertiary,
+        animationSpec = tween(durationMillis = 180),
+        label = "nav_tint",
     )
 
     Column(
@@ -164,20 +165,22 @@ private fun NavTabItem(
                 indication = null,
                 onClick = onClick,
             )
-            .padding(vertical = 6.dp),
+            .padding(vertical = 8.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(2.dp),
+        verticalArrangement = Arrangement.spacedBy(3.dp),
     ) {
         Icon(
             imageVector = item.icon,
             contentDescription = item.label,
-            tint = iconTint,
-            modifier = Modifier.size(24.dp),
+            tint = tint,
+            modifier = Modifier.size(22.dp),
         )
         Text(
             text = item.label,
-            style = MaterialTheme.typography.labelSmall,
-            color = iconTint,
+            fontSize = 10.sp,
+            fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal,
+            color = tint,
+            letterSpacing = 0.sp,
         )
     }
 }

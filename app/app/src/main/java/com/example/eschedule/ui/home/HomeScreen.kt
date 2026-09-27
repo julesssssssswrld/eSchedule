@@ -21,7 +21,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.example.eschedule.ui.components.ClassCard
@@ -29,6 +28,7 @@ import com.example.eschedule.ui.components.ClassCardData
 import com.example.eschedule.ui.components.ReminderItemData
 import com.example.eschedule.ui.components.ReminderListItem
 import com.example.eschedule.ui.components.SectionHeader
+import com.example.eschedule.ui.components.appShadow
 
 @Composable
 fun HomeScreen(
@@ -91,8 +91,8 @@ fun HomeScreen(
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .shadow(2.dp, RoundedCornerShape(12.dp))
-                .background(Color.White, RoundedCornerShape(12.dp))
+                .appShadow(cornerRadius = 14.dp)
+                .background(Color.White, RoundedCornerShape(14.dp))
                 .padding(horizontal = 12.dp, vertical = 4.dp),
         ) {
             Column {

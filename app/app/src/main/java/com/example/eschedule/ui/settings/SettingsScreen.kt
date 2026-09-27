@@ -24,7 +24,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
@@ -34,6 +33,7 @@ import com.example.eschedule.theme.TextTertiary
 import com.example.eschedule.theme.UepBlue
 import com.example.eschedule.ui.components.AppIcons
 import com.example.eschedule.ui.components.SectionHeader
+import com.example.eschedule.ui.components.appShadow
 
 private data class SettingsItem(
     val label: String,
@@ -105,7 +105,7 @@ private fun SettingsGroup(
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .shadow(2.dp, RoundedCornerShape(12.dp))
+            .appShadow(cornerRadius = 14.dp)
             .background(Color.White, RoundedCornerShape(12.dp)),
     ) {
         Column {

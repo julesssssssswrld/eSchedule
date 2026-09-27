@@ -47,14 +47,16 @@ fun AppScaffold() {
             BottomNavBar(
                 currentTab = currentTab,
                 onTabSelected = { currentTab = it },
-                onScanClick = { currentTab = TabRoute.Home /* Scan is its own flow */ },
+                onScanClick = { currentTab = TabRoute.Home },
             )
         },
     ) { innerPadding ->
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(innerPadding),
+                // Only apply top padding — the nav bar floats so screens
+                // scroll under it; individual screens add their own bottom spacing.
+                .padding(top = innerPadding.calculateTopPadding()),
         ) {
             when (currentTab) {
                 TabRoute.Home -> HomeScreen(

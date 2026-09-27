@@ -37,7 +37,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -46,6 +45,7 @@ import com.example.eschedule.theme.TextSecondary
 import com.example.eschedule.theme.TextTertiary
 import com.example.eschedule.theme.UepBlue
 import com.example.eschedule.ui.components.AppIcons
+import com.example.eschedule.ui.components.appShadow
 
 private val DAY_LABELS = listOf("S", "M", "T", "W", "Th", "F", "S")
 
@@ -256,7 +256,7 @@ private fun ClassTitleField(value: String, onValueChange: (String) -> Unit) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .shadow(1.dp, RoundedCornerShape(8.dp))
+            .appShadow(cornerRadius = 10.dp)
             .background(Color.White, RoundedCornerShape(8.dp)),
         verticalAlignment = Alignment.CenterVertically,
     ) {
@@ -287,7 +287,7 @@ private fun ClassOptionsCard(content: @Composable () -> Unit) {
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .shadow(1.dp, RoundedCornerShape(8.dp))
+            .appShadow(cornerRadius = 10.dp)
             .background(Color.White, RoundedCornerShape(8.dp))
             .padding(horizontal = 16.dp),
     ) {

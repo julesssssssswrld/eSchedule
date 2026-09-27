@@ -27,7 +27,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -38,6 +37,7 @@ import com.example.eschedule.theme.TextTertiary
 import com.example.eschedule.theme.UepBlue
 import com.example.eschedule.ui.components.EScheduleFab
 import com.example.eschedule.ui.components.SectionHeader
+import com.example.eschedule.ui.components.appShadow
 
 private val DAYS = listOf("Mon", "Tue", "Wed", "Thur", "Fri", "Sat", "Sun")
 
@@ -194,7 +194,7 @@ private fun WeeklyGrid(
                                 .fillMaxWidth()
                                 .padding(top = topOffset.dp, start = 1.dp, end = 1.dp)
                                 .height(blockHeight.dp)
-                                .shadow(1.dp, RoundedCornerShape(4.dp))
+                                .appShadow(blur = 6.dp, spread = (-3).dp, cornerRadius = 6.dp)
                                 .background(ClassTeal, RoundedCornerShape(4.dp))
                                 .clip(RoundedCornerShape(4.dp))
                                 .clickable { onBlockClick(block.id) },

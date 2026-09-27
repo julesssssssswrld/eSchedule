@@ -23,7 +23,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.example.eschedule.theme.DividerColor
@@ -34,6 +33,7 @@ import com.example.eschedule.ui.components.FilterChip
 import com.example.eschedule.ui.components.ReminderItemData
 import com.example.eschedule.ui.components.ReminderListItem
 import com.example.eschedule.ui.components.SectionHeader
+import com.example.eschedule.ui.components.appShadow
 
 private val FILTERS = listOf("All", "Today", "Week", "Month", "Completed")
 
@@ -98,7 +98,7 @@ fun RemindersScreen(
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .shadow(2.dp, RoundedCornerShape(12.dp))
+                    .appShadow(cornerRadius = 14.dp)
                     .background(Color.White, RoundedCornerShape(12.dp))
                     .padding(horizontal = 12.dp, vertical = 4.dp),
             ) {
@@ -129,7 +129,7 @@ fun RemindersScreen(
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .shadow(2.dp, RoundedCornerShape(12.dp))
+                        .appShadow(cornerRadius = 14.dp)
                         .background(Color.White, RoundedCornerShape(12.dp))
                         .padding(horizontal = 12.dp, vertical = 4.dp),
                 ) {
