@@ -27,6 +27,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -93,9 +94,10 @@ fun ClassesScreen(
         cal.get(Calendar.HOUR_OF_DAY) + cal.get(Calendar.MINUTE) / 60f
     }
 
+    val density = LocalDensity.current
     val scrollState = rememberScrollState()
     LaunchedEffect(Unit) {
-        val targetPx = ((SCROLL_TO_HOUR - TIME_START) * HOUR_HEIGHT.value).toInt()
+        val targetPx = with(density) { (HOUR_HEIGHT * SCROLL_TO_HOUR).toPx().toInt() }
         scrollState.scrollTo(targetPx)
     }
 
@@ -103,8 +105,12 @@ fun ClassesScreen(
         Column(modifier = Modifier.fillMaxSize()) {
 
             // ── Title ─────────────────────────────────────────────────────────
-            SectionHeader(
-                title = "Class Schedule",
+            Text(
+                text = "Class Schedule",
+                fontSize = 28.sp,
+                fontWeight = FontWeight.Bold,
+                color = UepBlue,
+                letterSpacing = 0.sp,
                 modifier = Modifier.padding(start = 20.dp, end = 20.dp, top = 16.dp, bottom = 12.dp),
             )
 
@@ -181,76 +187,86 @@ private fun androidx.compose.foundation.layout.RowScope.WeeklyGrid(
     val totalHours = hours.count()
     val gridH      = HOUR_HEIGHT * totalHours
 
-    // ── Time label column ─────────────────────────────────────────────────────
-    Column(modifier = Modifier.width(LABEL_W)) {
-        hours.forEach { hour ->
-            Box(
-                modifier = Modifier.height(HOUR_HEIGHT),
-                contentAlignment = Alignment.TopEnd,     // text sits ON the divider line
-            ) {
-                Text(
-                    text = hourLabel(hour),
-                    fontSize = 9.sp,
-                    color = TextTertiary,
-                    letterSpacing = 0.sp,
-                    modifier = Modifier.padding(end = 8.dp, top = 2.dp),
-                )
-            }
-        }
-    }
-
-    // ── Day columns + current-time overlay ───────────────────────────────────
+    // Wrap the entire grid (labels + days) in a Box so the time indicator
+    // can span the full width from the label column into the day columns.
     Box(
         modifier = Modifier
             .weight(1f)
             .height(gridH),
     ) {
-        // Hour divider lines
-        Column(modifier = Modifier.fillMaxSize()) {
-            hours.forEach { _ ->
-                Box(modifier = Modifier.height(HOUR_HEIGHT)) {
-                    HorizontalDivider(
-                        color = DividerColor,
-                        thickness = 0.5.dp,
-                        modifier = Modifier.align(Alignment.TopStart),
-                    )
+        Row(modifier = Modifier.fillMaxSize()) {
+            // ── Time label column ────────────────────────────────────────────
+            Column(modifier = Modifier.width(LABEL_W)) {
+                hours.forEach { hour ->
+                    Box(
+                        modifier = Modifier.height(HOUR_HEIGHT),
+                        contentAlignment = Alignment.TopEnd,
+                    ) {
+                        Text(
+                            text = hourLabel(hour),
+                            fontSize = 9.sp,
+                            color = TextTertiary,
+                            letterSpacing = 0.sp,
+                            modifier = Modifier.padding(end = 8.dp, top = 2.dp),
+                        )
+                    }
                 }
             }
-        }
 
-        // Day columns with class blocks
-        Row(modifier = Modifier.fillMaxSize()) {
-            DAYS.forEachIndexed { dayIndex, _ ->
-                Box(
-                    modifier = Modifier
-                        .weight(1f)
-                        .fillMaxHeight(),
-                ) {
-                    blocks.filter { it.dayIndex == dayIndex }.forEach { block ->
-                        val topDp   = (block.startHour - TIME_START) * HOUR_HEIGHT.value
-                        val blockH  = block.durationHours * HOUR_HEIGHT.value
+            // ── Day columns ──────────────────────────────────────────────────
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxHeight(),
+            ) {
+                // Hour divider lines
+                Column(modifier = Modifier.fillMaxSize()) {
+                    hours.forEach { _ ->
+                        Box(modifier = Modifier.height(HOUR_HEIGHT)) {
+                            HorizontalDivider(
+                                color = DividerColor,
+                                thickness = 0.5.dp,
+                                modifier = Modifier.align(Alignment.TopStart),
+                            )
+                        }
+                    }
+                }
 
+                // Class blocks
+                Row(modifier = Modifier.fillMaxSize()) {
+                    DAYS.forEachIndexed { dayIndex, _ ->
                         Box(
                             modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(top = topDp.dp + 2.dp, start = 1.dp, end = 1.dp)
-                                .height((blockH - 2f).dp)
-                                .appShadow(blur = 6.dp, spread = (-3).dp, cornerRadius = 4.dp)
-                                .background(ClassTeal, RoundedCornerShape(4.dp))
-                                .clip(RoundedCornerShape(4.dp))
-                                .clickable { onBlockClick(block.id) },
-                            contentAlignment = Alignment.TopStart,
+                                .weight(1f)
+                                .fillMaxHeight(),
                         ) {
-                            Text(
-                                text = block.subjectCode,
-                                fontSize = 9.sp,
-                                fontWeight = FontWeight.SemiBold,
-                                color = Color.White,
-                                letterSpacing = 0.sp,
-                                maxLines = 3,
-                                overflow = TextOverflow.Ellipsis,
-                                modifier = Modifier.padding(horizontal = 3.dp, vertical = 2.dp),
-                            )
+                            blocks.filter { it.dayIndex == dayIndex }.forEach { block ->
+                                val topDp  = (block.startHour - TIME_START) * HOUR_HEIGHT.value
+                                val blockH = block.durationHours * HOUR_HEIGHT.value
+
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(top = topDp.dp + 2.dp, start = 1.dp, end = 1.dp)
+                                        .height((blockH - 2f).dp)
+                                        .appShadow(blur = 6.dp, spread = (-3).dp, cornerRadius = 4.dp)
+                                        .background(ClassTeal, RoundedCornerShape(4.dp))
+                                        .clip(RoundedCornerShape(4.dp))
+                                        .clickable { onBlockClick(block.id) },
+                                    contentAlignment = Alignment.TopStart,
+                                ) {
+                                    Text(
+                                        text = block.subjectCode,
+                                        fontSize = 9.sp,
+                                        fontWeight = FontWeight.SemiBold,
+                                        color = Color.White,
+                                        letterSpacing = 0.sp,
+                                        maxLines = 3,
+                                        overflow = TextOverflow.Ellipsis,
+                                        modifier = Modifier.padding(horizontal = 3.dp, vertical = 2.dp),
+                                    )
+                                }
+                            }
                         }
                     }
                 }
@@ -258,7 +274,8 @@ private fun androidx.compose.foundation.layout.RowScope.WeeklyGrid(
         }
 
         // ── Current time indicator ─────────────────────────────────────────
-        // Only visible if current time is within the 24h grid
+        // Overlaid on the ENTIRE grid (labels + days) so dot sits in the
+        // label column and line extends across all day columns.
         if (currentHour in TIME_START.toFloat()..TIME_END.toFloat()) {
             val offsetDp = ((currentHour - TIME_START) * HOUR_HEIGHT.value).dp
             Box(
@@ -266,20 +283,20 @@ private fun androidx.compose.foundation.layout.RowScope.WeeklyGrid(
                     .fillMaxWidth()
                     .offset(y = offsetDp),
             ) {
-                // Red dot — offset -4dp left so it straddles the label/grid boundary
+                // Red dot — placed at right edge of the label column
                 Box(
                     modifier = Modifier
-                        .offset(x = (-4).dp)
+                        .offset(x = LABEL_W - 4.dp)
                         .size(8.dp)
                         .background(CurrentTimeIndicator, CircleShape)
                         .align(Alignment.CenterStart),
                 )
-                // Red line starts after the dot
+                // Red line — starts after the dot, spans all day columns
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(1.5.dp)
-                        .padding(start = 5.dp)
+                        .padding(start = LABEL_W)
                         .background(CurrentTimeIndicator)
                         .align(Alignment.CenterStart),
                 )

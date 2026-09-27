@@ -1,7 +1,6 @@
 package com.example.eschedule.ui.components
 
 import androidx.compose.animation.animateColorAsState
-import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -29,7 +28,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -55,7 +53,7 @@ private data class NavItem(
 )
 
 // ── Design tokens ──────────────────────────────────────────────────────────────
-private val PillBg       = Color(0x33000000)        // black 20%
+private val PillBg       = Color(0xBF000000)        // black 75%
 private val PillBorder   = Color(0x18FFFFFF)
 private val ActiveTint   = NavActiveBlue             // #0088FF when selected
 private val InactiveTint = Color.White               // plain white when idle
@@ -201,14 +199,8 @@ private fun NavTabItem(
         animationSpec = tween(durationMillis = 200),
         label = "tint_${item.label}",
     )
-    // Subtle white pill behind active tab (iOS 26 style)
-    val pillAlpha by animateFloatAsState(
-        targetValue = if (isSelected) 1f else 0f,
-        animationSpec = tween(durationMillis = 200),
-        label = "pill_${item.label}",
-    )
 
-    Box(
+    Column(
         modifier = modifier
             .clip(RoundedCornerShape(10.dp))
             .clickable(
@@ -216,35 +208,24 @@ private fun NavTabItem(
                 indication = null,
                 onClick = onClick,
             )
-            .padding(vertical = 6.dp, horizontal = 2.dp),
-        contentAlignment = Alignment.Center,
+            .padding(vertical = 8.dp, horizontal = 2.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(3.dp),
     ) {
-        // White pill background
-        Box(
-            modifier = Modifier
-                .matchParentSize()
-                .graphicsLayer { alpha = pillAlpha }
-                .background(Color.White.copy(alpha = 0.18f), RoundedCornerShape(10.dp)),
+        Icon(
+            imageVector = item.icon,
+            contentDescription = item.label,
+            tint = tint,
+            modifier = Modifier.size(NavIconSize),
         )
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(3.dp),
-        ) {
-            Icon(
-                imageVector = item.icon,
-                contentDescription = item.label,
-                tint = tint,
-                modifier = Modifier.size(NavIconSize),
-            )
-            Text(
-                text = item.label,
-                fontSize = NavLabelSize,
-                fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal,
-                color = tint,
-                letterSpacing = 0.sp,
-                maxLines = 1,
-                overflow = TextOverflow.Visible,
-            )
-        }
+        Text(
+            text = item.label,
+            fontSize = NavLabelSize,
+            fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal,
+            color = tint,
+            letterSpacing = 0.sp,
+            maxLines = 1,
+            overflow = TextOverflow.Visible,
+        )
     }
 }

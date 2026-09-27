@@ -88,15 +88,13 @@ fun HomeScreen(
             .padding(horizontal = 20.dp),
     ) {
         // ── Page title ─────────────────────────────────────────────────────────
-        // Large bold title; sits at the top of the scroll area
-        Spacer(Modifier.height(8.dp))
         Text(
             text = "Dashboard",
             fontSize = 28.sp,
             fontWeight = FontWeight.Bold,
             color = UepBlue,
             letterSpacing = 0.sp,
-            modifier = Modifier.padding(bottom = 24.dp, top = 8.dp),
+            modifier = Modifier.padding(bottom = 16.dp),
         )
 
         // ── Current class ─────────────────────────────────────────────────────
@@ -107,14 +105,14 @@ fun HomeScreen(
             onClick = { onClassClick(currentClass.id) },
         )
 
-        Spacer(Modifier.height(28.dp))
+        Spacer(Modifier.height(16.dp))
 
         // ── Upcoming classes ──────────────────────────────────────────────────
         SectionHeader(title = "Upcoming Classes")
         Spacer(Modifier.height(8.dp))
         StackedClassCards(cards = upcomingClasses)
 
-        Spacer(Modifier.height(28.dp))
+        Spacer(Modifier.height(16.dp))
 
         // ── Reminders ─────────────────────────────────────────────────────────
         SectionHeader(title = "Reminders")

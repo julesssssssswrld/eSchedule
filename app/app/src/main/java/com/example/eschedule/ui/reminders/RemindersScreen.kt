@@ -24,6 +24,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.eschedule.theme.DividerColor
@@ -33,7 +34,6 @@ import com.example.eschedule.ui.components.EScheduleFab
 import com.example.eschedule.ui.components.FilterChip
 import com.example.eschedule.ui.components.ReminderItemData
 import com.example.eschedule.ui.components.ReminderListItem
-import com.example.eschedule.ui.components.SectionHeader
 import com.example.eschedule.ui.components.appShadow
 
 private val FILTERS = listOf("All", "Today", "Week", "Month", "Completed")
@@ -78,7 +78,13 @@ fun RemindersScreen(
                 .verticalScroll(rememberScrollState())
                 .padding(horizontal = 20.dp, vertical = 16.dp),
         ) {
-            SectionHeader(title = "Reminders")
+            Text(
+                text = "Reminders",
+                fontSize = 28.sp,
+                fontWeight = FontWeight.Bold,
+                color = UepBlue,
+                letterSpacing = 0.sp,
+            )
 
             Spacer(Modifier.height(16.dp))
 
