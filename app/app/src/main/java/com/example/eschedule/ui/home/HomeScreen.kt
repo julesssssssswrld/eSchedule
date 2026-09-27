@@ -37,7 +37,6 @@ fun HomeScreen(
     onReminderMoreClick: (String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    // Stub data — will be replaced by ViewModel/repository later
     val currentClass = remember {
         ClassCardData(
             id = "it102",
@@ -70,66 +69,74 @@ fun HomeScreen(
     }
     val reminders = remember {
         listOf(
-            ReminderItemData(id = "r1", title = "Pag laba",            dueLabel = "12:51 PM"),
-            ReminderItemData(id = "r2", title = "Do app dev project",  dueLabel = "Tomorrow"),
-            ReminderItemData(id = "r3", title = "Make journal",         dueLabel = "Sep 21"),
-            ReminderItemData(id = "r4", title = "Assassinate Jons",    dueLabel = "Dec 17"),
+            ReminderItemData(id = "r1", title = "Pag laba",           dueLabel = "12:51 PM"),
+            ReminderItemData(id = "r2", title = "Do app dev project", dueLabel = "Tomorrow"),
+            ReminderItemData(id = "r3", title = "Make journal",        dueLabel = "Sep 21"),
+            ReminderItemData(id = "r4", title = "Assassinate Jons",   dueLabel = "Dec 17"),
         )
     }
     var checkedIds by remember { mutableStateOf(setOf<String>()) }
 
-    Column(
-        modifier = modifier
-            .fillMaxSize()
-            .verticalScroll(rememberScrollState())
-            .padding(horizontal = 20.dp, vertical = 16.dp),
-    ) {
-        // ── Page title
-        PageTitle(title = "Dashboard")
+    // Outer Column: title is FIXED (never scrolls), content scrolls below it
+    Column(modifier = modifier.fillMaxSize()) {
 
-        // ── Current class ─────────────────────────────────────────────────────
-        SectionHeader(title = "Current Class")
-        Spacer(Modifier.height(8.dp))
-        ClassCard(
-            data = currentClass,
-            onClick = { onClassClick(currentClass.id) },
+        // ── Sticky page title ─────────────────────────────────────────────────
+        PageTitle(
+            title = "Dashboard",
+            modifier = Modifier.padding(horizontal = 20.dp, vertical = 16.dp),
         )
 
-        Spacer(Modifier.height(16.dp))
-
-        // ── Upcoming classes ──────────────────────────────────────────────────
-        SectionHeader(title = "Upcoming Classes")
-        Spacer(Modifier.height(8.dp))
-        StackedClassCards(cards = upcomingClasses)
-
-        Spacer(Modifier.height(16.dp))
-
-        // ── Reminders ─────────────────────────────────────────────────────────
-        SectionHeader(title = "Reminders")
-        Spacer(Modifier.height(8.dp))
-        Box(
+        // ── Scrollable content ────────────────────────────────────────────────
+        Column(
             modifier = Modifier
-                .fillMaxWidth()
-                .appShadow(cornerRadius = 14.dp)
-                .background(Color.White, RoundedCornerShape(14.dp))
-                .padding(horizontal = 12.dp, vertical = 4.dp),
+                .fillMaxSize()
+                .verticalScroll(rememberScrollState())
+                .padding(horizontal = 20.dp),
         ) {
-            Column {
-                reminders.forEach { reminder ->
-                    ReminderListItem(
-                        data = reminder.copy(isCompleted = checkedIds.contains(reminder.id)),
-                        onCheckedChange = { checked ->
-                            checkedIds = if (checked) checkedIds + reminder.id
-                            else checkedIds - reminder.id
-                        },
-                        onMoreClick = { onReminderMoreClick(reminder.id) },
-                        showMoreButton = false,
-                    )
+            // ── Current class
+            SectionHeader(title = "Current Class")
+            Spacer(Modifier.height(8.dp))
+            ClassCard(
+                data = currentClass,
+                onClick = { onClassClick(currentClass.id) },
+            )
+
+            Spacer(Modifier.height(16.dp))
+
+            // ── Upcoming classes
+            SectionHeader(title = "Upcoming Classes")
+            Spacer(Modifier.height(8.dp))
+            StackedClassCards(cards = upcomingClasses)
+
+            Spacer(Modifier.height(16.dp))
+
+            // ── Reminders
+            SectionHeader(title = "Reminders")
+            Spacer(Modifier.height(8.dp))
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .appShadow(cornerRadius = 14.dp)
+                    .background(Color.White, RoundedCornerShape(14.dp))
+                    .padding(horizontal = 12.dp, vertical = 4.dp),
+            ) {
+                Column {
+                    reminders.forEach { reminder ->
+                        ReminderListItem(
+                            data = reminder.copy(isCompleted = checkedIds.contains(reminder.id)),
+                            onCheckedChange = { checked ->
+                                checkedIds = if (checked) checkedIds + reminder.id
+                                else checkedIds - reminder.id
+                            },
+                            onMoreClick = { onReminderMoreClick(reminder.id) },
+                            showMoreButton = false,
+                        )
+                    }
                 }
             }
-        }
 
-        // Bottom spacing so content clears the floating nav bar
-        Spacer(Modifier.height(120.dp))
+            // Bottom spacing so content clears the floating nav bar
+            Spacer(Modifier.height(120.dp))
+        }
     }
 }

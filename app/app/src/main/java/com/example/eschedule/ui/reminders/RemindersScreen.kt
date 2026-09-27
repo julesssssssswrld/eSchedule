@@ -72,62 +72,39 @@ fun RemindersScreen(
     var checkedIds by remember { mutableStateOf(setOf<String>()) }
 
     Box(modifier = modifier.fillMaxSize()) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .verticalScroll(rememberScrollState())
-                .padding(horizontal = 20.dp, vertical = 16.dp),
-        ) {
-            PageTitle(title = "Reminders")
+        // Outer Column: title fixed, content scrolls
+        Column(modifier = Modifier.fillMaxSize()) {
 
-            Spacer(Modifier.height(4.dp))
+            // ── Sticky page title ─────────────────────────────────────────────
+            PageTitle(
+                title = "Reminders",
+                modifier = Modifier.padding(horizontal = 20.dp, vertical = 16.dp),
+            )
 
-            // Filter chips — horizontally scrollable so they never wrap
-            Row(
-                modifier = Modifier.horizontalScroll(rememberScrollState()),
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-            ) {
-                FILTERS.forEach { filter ->
-                    FilterChip(
-                        label = filter,
-                        selected = selectedFilter == filter,
-                        onClick = { selectedFilter = filter },
-                    )
-                }
-            }
-
-            Spacer(Modifier.height(16.dp))
-
-            // Active reminders card
-            Box(
+            // ── Scrollable content ────────────────────────────────────────────
+            Column(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .appShadow(cornerRadius = 14.dp)
-                    .background(Color.White, RoundedCornerShape(12.dp))
-                    .padding(horizontal = 12.dp, vertical = 4.dp),
+                    .fillMaxSize()
+                    .verticalScroll(rememberScrollState())
+                    .padding(horizontal = 20.dp),
             ) {
-                Column {
-                    activeReminders.forEach { reminder ->
-                        ReminderListItem(
-                            data = reminder.copy(isCompleted = checkedIds.contains(reminder.id)),
-                            onCheckedChange = { checked ->
-                                checkedIds = if (checked) checkedIds + reminder.id
-                                else checkedIds - reminder.id
-                            },
-                            onMoreClick = { onReminderMoreClick(reminder.id) },
+                // Filter chips — horizontally scrollable so they never wrap
+                Row(
+                    modifier = Modifier.horizontalScroll(rememberScrollState()),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
+                    FILTERS.forEach { filter ->
+                        FilterChip(
+                            label = filter,
+                            selected = selectedFilter == filter,
+                            onClick = { selectedFilter = filter },
                         )
                     }
                 }
-            }
 
-            Spacer(Modifier.height(20.dp))
+                Spacer(Modifier.height(16.dp))
 
-            // Completed section
-            if (selectedFilter == "All" || selectedFilter == "Completed") {
-                SectionHeader(
-                    title = "Completed",
-                    modifier = Modifier.padding(bottom = 8.dp),
-                )
+                // Active reminders card
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -136,19 +113,49 @@ fun RemindersScreen(
                         .padding(horizontal = 12.dp, vertical = 4.dp),
                 ) {
                     Column {
-                        completedReminders.forEach { reminder ->
+                        activeReminders.forEach { reminder ->
                             ReminderListItem(
-                                data = reminder,
-                                onCheckedChange = {},
+                                data = reminder.copy(isCompleted = checkedIds.contains(reminder.id)),
+                                onCheckedChange = { checked ->
+                                    checkedIds = if (checked) checkedIds + reminder.id
+                                    else checkedIds - reminder.id
+                                },
                                 onMoreClick = { onReminderMoreClick(reminder.id) },
-                                showMoreButton = false,
                             )
                         }
                     }
                 }
-            }
 
-            Spacer(Modifier.height(96.dp))
+                Spacer(Modifier.height(20.dp))
+
+                // Completed section
+                if (selectedFilter == "All" || selectedFilter == "Completed") {
+                    SectionHeader(
+                        title = "Completed",
+                        modifier = Modifier.padding(bottom = 8.dp),
+                    )
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .appShadow(cornerRadius = 14.dp)
+                            .background(Color.White, RoundedCornerShape(12.dp))
+                            .padding(horizontal = 12.dp, vertical = 4.dp),
+                    ) {
+                        Column {
+                            completedReminders.forEach { reminder ->
+                                ReminderListItem(
+                                    data = reminder,
+                                    onCheckedChange = {},
+                                    onMoreClick = { onReminderMoreClick(reminder.id) },
+                                    showMoreButton = false,
+                                )
+                            }
+                        }
+                    }
+                }
+
+                Spacer(Modifier.height(96.dp))
+            }
         }
 
         EScheduleFab(

@@ -157,7 +157,7 @@ fun ClassCard(
 private val PEEK_DP     : Dp    = 16.dp   // vertical peek per depth level
 private val SCALE_STEP  : Float = 0.025f  // scale reduction per depth
 private val ALPHA_STEP  : Float = 0.10f   // alpha reduction per depth
-private const val ESTIMATED_CARD_H = 86f  // dp; used for expanded Y spacing
+private const val ESTIMATED_CARD_H = 72f  // dp; used for expanded Y spacing
 private const val EXPAND_GAP       = 12f  // dp gap between expanded cards
 
 @Composable

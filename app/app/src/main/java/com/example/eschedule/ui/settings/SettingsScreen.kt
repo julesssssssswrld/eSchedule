@@ -73,8 +73,6 @@ fun SettingsScreen(
     ) {
         PageTitle(title = "Settings")
 
-        Spacer(Modifier.height(4.dp))
-
         SettingsGroupLabel("General")
         SettingsGroup(items = generalItems, onItemClick = onItemClick)
 
