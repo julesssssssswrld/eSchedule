@@ -28,6 +28,7 @@ import com.example.eschedule.ui.components.ClassCardData
 import com.example.eschedule.ui.components.ReminderItemData
 import com.example.eschedule.ui.components.ReminderListItem
 import com.example.eschedule.ui.components.SectionHeader
+import com.example.eschedule.ui.components.StackedClassCards
 import com.example.eschedule.ui.components.appShadow
 
 @Composable
@@ -52,7 +53,18 @@ fun HomeScreen(
                 title = "SIA101 - System Integration and Architecture",
                 timeRange = "10:00 AM - 1:00 PM",
                 location = "L4",
-                isExpandable = true,
+            ),
+            ClassCardData(
+                id = "cs301",
+                title = "CS301 - Operating Systems",
+                timeRange = "2:00 PM - 3:30 PM",
+                location = "CSFLD22",
+            ),
+            ClassCardData(
+                id = "it201",
+                title = "IT201 - Database Management",
+                timeRange = "4:00 PM - 5:30 PM",
+                location = "L2",
             ),
         )
     }
@@ -82,12 +94,10 @@ fun HomeScreen(
         // ── Upcoming classes ───────────────────────────────────────────────────
         Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
             SectionHeader(title = "Upcoming Classes")
-            upcomingClasses.forEach { cls ->
-                ClassCard(
-                    data = cls,
-                    onClick = { onClassClick(cls.id) },
-                )
-            }
+            StackedClassCards(
+                cards = upcomingClasses,
+                onCardClick = onClassClick,
+            )
         }
 
         // ── Reminders ──────────────────────────────────────────────────────────

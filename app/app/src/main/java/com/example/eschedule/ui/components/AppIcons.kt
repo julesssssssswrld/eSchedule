@@ -74,8 +74,9 @@ object AppIcons {
 /**
  * Builds a Material Symbols icon correctly accounting for its viewBox="0 -960 960 960".
  *
- * Compose ImageVector has no minY, so we set the viewport to 960×960 and wrap the path
- * in a group with translationY=+960 to shift the -960…0 Y coords into the 0…960 range.
+ * The viewport is expanded to 1000×1000 and content is offset by (20, 980) to give
+ * a 20px buffer on every edge — preventing top/side clipping on icons whose paths
+ * reach the extreme Y≈-880 range (e.g. bell icon peak at Y=-880 → viewport Y=100).
  * EvenOdd fill rule is required so hollow shapes (gear, bell, etc.) render correctly.
  */
 private fun icon(name: String, pathData: String): ImageVector =
@@ -83,10 +84,10 @@ private fun icon(name: String, pathData: String): ImageVector =
         name = name,
         defaultWidth = 24.dp,
         defaultHeight = 24.dp,
-        viewportWidth = 960f,
-        viewportHeight = 960f,
+        viewportWidth = 1000f,
+        viewportHeight = 1000f,
     ).apply {
-        group(translationY = 960f) {
+        group(translationX = 20f, translationY = 980f) {
             addPath(
                 pathData = addPathNodes(pathData),
                 fill = SolidColor(Color.Black),

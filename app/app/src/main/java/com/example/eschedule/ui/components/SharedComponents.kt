@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -25,18 +26,89 @@ import androidx.compose.material3.CheckboxDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.eschedule.theme.DividerColor
 import com.example.eschedule.theme.TextSecondary
 import com.example.eschedule.theme.TextTertiary
 import com.example.eschedule.theme.UepBlue
+
+// ─── Stacked class cards ───────────────────────────────────────────────────────
+// Shows upcoming cards in a fanned stack. Tap to expand/collapse.
+
+private val PeekHeight : Dp = 10.dp   // how much each card behind peeks
+
+@Composable
+fun StackedClassCards(
+    cards: List<ClassCardData>,
+    onCardClick: (String) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    if (cards.isEmpty()) return
+
+    var expanded by remember { mutableStateOf(false) }
+
+    if (expanded) {
+        // ── Expanded: all cards shown in a column ──────────────────────────
+        Column(
+            modifier = modifier.fillMaxWidth(),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            cards.forEach { card ->
+                ClassCard(
+                    data = card.copy(isExpandable = false),
+                    onClick = {
+                        if (cards.size > 1) expanded = false
+                        onCardClick(card.id)
+                    },
+                )
+            }
+        }
+    } else {
+        // ── Collapsed: cards fanned as a stack ────────────────────────────
+        // Cards are drawn LAST-to-FIRST so index-0 is on top.
+        // Each subsequent card is offset downward by PeekHeight,
+        // creating a "peeking" visual under the top card.
+        // Total stack height = card height + (n-1) * PeekHeight.
+        Box(
+            modifier = modifier
+                .fillMaxWidth()
+                // Reserve space for peeking cards below
+                .padding(bottom = ((cards.size - 1) * PeekHeight.value).dp),
+        ) {
+            cards.reversed().forEachIndexed { reversedIdx, card ->
+                val cardIdx = cards.size - 1 - reversedIdx  // 0 = top card
+                val scale   = 1f - cardIdx * 0.025f         // slight scale down per layer
+                val alpha   = 1f - cardIdx * 0.25f          // fade out lower layers
+
+                ClassCard(
+                    data = if (cardIdx == 0) card.copy(isExpandable = cards.size > 1)
+                           else card.copy(isExpandable = false),
+                    onClick = { if (cards.size > 1) expanded = true else onCardClick(card.id) },
+                    modifier = Modifier
+                        .offset(y = (cardIdx * PeekHeight.value).dp)
+                        .graphicsLayer {
+                            scaleX = scale
+                            this.alpha = alpha
+                        },
+                )
+            }
+        }
+    }
+}
+
 
 // ─── Class card ────────────────────────────────────────────────────────────────
 

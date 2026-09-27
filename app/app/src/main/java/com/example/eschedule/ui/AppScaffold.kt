@@ -3,6 +3,7 @@ package com.example.eschedule.ui
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -54,6 +55,7 @@ fun AppScaffold() {
         Box(
             modifier = Modifier
                 .fillMaxSize()
+                .statusBarsPadding()
                 // Only apply top padding — the nav bar floats so screens
                 // scroll under it; individual screens add their own bottom spacing.
                 .padding(top = innerPadding.calculateTopPadding()),

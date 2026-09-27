@@ -30,8 +30,12 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.eschedule.theme.AppBackground
+import com.example.eschedule.theme.NavActiveBlue
 import com.example.eschedule.theme.UepBlue
 import com.example.eschedule.theme.UepYellow
 
@@ -48,16 +52,23 @@ private data class NavItem(
     val tab: TabRoute,
 )
 
-// Black at 20% — dark frosted glass
-private val PillBg       = Color(0x33000000)
-private val PillBorder   = Color(0x22FFFFFF)
-private val ActiveTint   = Color.White
-private val InactiveTint = Color.White.copy(alpha = 0.45f)
+// ── Design tokens ──────────────────────────────────────────────────────────────
+private val PillBg       = Color(0x33000000)        // black 20%
+private val PillBorder   = Color(0x18FFFFFF)
+private val ActiveTint   = NavActiveBlue             // #0088FF when selected
+private val InactiveTint = Color.White               // plain white when idle
 
-// Uniform icon + label dimensions so everything looks the same size
-private val NavIconSize   = 20.dp
-private val NavLabelSize  = 10.sp
-private val NavItemWidth  = 64.dp   // fixed width keeps columns identical
+// Shared sizing so icon + label are always proportional across all items
+private val NavIconSize  : Dp = 20.dp
+private val NavLabelSize = 10.sp
+
+// FAB geometry — cutout ring around yellow button
+private val PillHeight   : Dp = 60.dp
+private val FabSize      : Dp = 56.dp
+private val FabRing      : Dp = 6.dp
+private val FabRingSize  : Dp = FabSize + FabRing * 2   // 68dp
+// Label box height: makes FAB centre land exactly at pill top
+private val ScanLabelH   : Dp = PillHeight - FabRingSize / 2
 
 @Composable
 fun BottomNavBar(
@@ -79,11 +90,6 @@ fun BottomNavBar(
         )
     }
 
-    // Total pill height
-    val pillHeight = 60.dp
-    // Scan FAB diameter — flush with pill top; 8dp protrudes above
-    val fabSize = 48.dp
-
     Box(
         modifier = modifier
             .fillMaxWidth()
@@ -91,69 +97,82 @@ fun BottomNavBar(
             .padding(horizontal = 20.dp, vertical = 10.dp),
         contentAlignment = Alignment.BottomCenter,
     ) {
-        // ── Dark glassmorphism pill ───────────────────────────────────────────
+        // ── Pill ──────────────────────────────────────────────────────────────
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(pillHeight)
+                .height(PillHeight)
                 .appShadow(blur = 10.dp, spread = (-5).dp, cornerRadius = 30.dp)
                 .background(PillBg, RoundedCornerShape(30.dp))
-                .border(0.5.dp, PillBorder, RoundedCornerShape(30.dp)),
-            horizontalArrangement = Arrangement.SpaceEvenly,
+                .border(0.5.dp, PillBorder, RoundedCornerShape(30.dp))
+                .padding(horizontal = 6.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
+            // Left tabs — equal weight
             itemsLeft.forEach { item ->
                 NavTabItem(
                     item = item,
                     isSelected = currentTab == item.tab,
                     onClick = { onTabSelected(item.tab) },
+                    modifier = Modifier.weight(1f),
                 )
             }
 
-            // Centre gap — exact same width as the FAB so layout is symmetric
-            Spacer(Modifier.width(fabSize))
+            // Centre gap — explicit width = FAB ring so the overlay aligns perfectly
+            Spacer(Modifier.width(FabRingSize))
 
+            // Right tabs — equal weight
             itemsRight.forEach { item ->
                 NavTabItem(
                     item = item,
                     isSelected = currentTab == item.tab,
                     onClick = { onTabSelected(item.tab) },
+                    modifier = Modifier.weight(1f),
                 )
             }
         }
 
-        // ── Scan FAB — centred, protrudes just above pill top ─────────────────
-        // Column bottom aligns with Box bottom (same as pill bottom).
-        // Scan label (~18dp) + FAB (48dp) = 66dp > pillHeight(60dp)
-        // → FAB top sits 6dp above pill top ✓
+        // ── Scan FAB (cutout ring + yellow button) ────────────────────────────
+        // Column is bottom-aligned. Geometry:
+        //   ScanLabelH (≈26dp) + FabRingSize (68dp) = ≈94dp from box bottom
+        //   FabRing centre = ScanLabelH + FabRingSize/2 = 60dp = PillHeight ✓
         Column(
             modifier = Modifier.align(Alignment.BottomCenter),
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(0.dp),
         ) {
+            // AppBackground ring creates visual "cutout" in the pill
             Box(
                 modifier = Modifier
-                    .size(fabSize)
-                    .appShadow(blur = 10.dp, spread = (-3).dp, cornerRadius = fabSize / 2)
-                    .background(UepYellow, CircleShape)
-                    .clip(CircleShape)
-                    .clickable(
-                        interactionSource = remember { MutableInteractionSource() },
-                        indication = null,
-                        onClick = onScanClick,
-                    ),
+                    .size(FabRingSize)
+                    .background(AppBackground, CircleShape),
                 contentAlignment = Alignment.Center,
             ) {
-                Icon(
-                    imageVector = AppIcons.Scan,
-                    contentDescription = "Scan",
-                    tint = UepBlue,
-                    modifier = Modifier.size(NavIconSize),
-                )
+                Box(
+                    modifier = Modifier
+                        .size(FabSize)
+                        .appShadow(blur = 10.dp, spread = (-3).dp, cornerRadius = FabSize / 2)
+                        .background(UepYellow, CircleShape)
+                        .clip(CircleShape)
+                        .clickable(
+                            interactionSource = remember { MutableInteractionSource() },
+                            indication = null,
+                            onClick = onScanClick,
+                        ),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Icon(
+                        imageVector = AppIcons.Scan,
+                        contentDescription = "Scan",
+                        tint = UepBlue,
+                        modifier = Modifier.size(NavIconSize + 2.dp),
+                    )
+                }
             }
-            // Label matches exact height of other tab labels so alignment is uniform
+            // "Scan" label sits inside the pill gap at the same baseline as other labels
             Box(
-                modifier = Modifier.height((pillHeight - fabSize) / 2 + 14.dp),
+                modifier = Modifier
+                    .width(FabRingSize)
+                    .height(ScanLabelH),
                 contentAlignment = Alignment.Center,
             ) {
                 Text(
@@ -173,23 +192,23 @@ private fun NavTabItem(
     item: NavItem,
     isSelected: Boolean,
     onClick: () -> Unit,
+    modifier: Modifier = Modifier,
 ) {
     val tint by animateColorAsState(
         targetValue = if (isSelected) ActiveTint else InactiveTint,
-        animationSpec = tween(durationMillis = 180),
-        label = "nav_tint_${item.label}",
+        animationSpec = tween(durationMillis = 200),
+        label = "tint_${item.label}",
     )
 
     Column(
-        modifier = Modifier
-            .width(NavItemWidth)
+        modifier = modifier
             .clip(RoundedCornerShape(10.dp))
             .clickable(
                 interactionSource = remember { MutableInteractionSource() },
                 indication = null,
                 onClick = onClick,
             )
-            .padding(vertical = 8.dp),
+            .padding(vertical = 8.dp, horizontal = 2.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(3.dp),
     ) {
@@ -205,6 +224,8 @@ private fun NavTabItem(
             fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal,
             color = tint,
             letterSpacing = 0.sp,
+            maxLines = 1,
+            overflow = TextOverflow.Visible,
         )
     }
 }
