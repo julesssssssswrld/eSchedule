@@ -41,6 +41,7 @@ import com.example.eschedule.theme.TextTertiary
 import com.example.eschedule.theme.UepBlue
 import com.example.eschedule.ui.components.EScheduleFab
 import com.example.eschedule.ui.components.SectionHeader
+import com.example.eschedule.ui.components.PageTitle
 import com.example.eschedule.ui.components.appShadow
 import java.util.Calendar
 
@@ -104,14 +105,10 @@ fun ClassesScreen(
     Box(modifier = modifier.fillMaxSize()) {
         Column(modifier = Modifier.fillMaxSize()) {
 
-            // ── Title ─────────────────────────────────────────────────────────
-            Text(
-                text = "Class Schedule",
-                fontSize = 28.sp,
-                fontWeight = FontWeight.Bold,
-                color = UepBlue,
-                letterSpacing = 0.sp,
-                modifier = Modifier.padding(start = 20.dp, end = 20.dp, top = 16.dp, bottom = 12.dp),
+            // ── Title
+            PageTitle(
+                title = "Class Schedule",
+                modifier = Modifier.padding(start = 20.dp, end = 20.dp, top = 16.dp),
             )
 
             // ── Sticky day-header row ─────────────────────────────────────────

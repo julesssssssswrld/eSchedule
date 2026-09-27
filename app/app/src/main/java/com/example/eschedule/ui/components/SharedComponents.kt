@@ -149,9 +149,9 @@ fun ClassCard(
 // Tapping the TOP card toggles; background cards are non-interactive.
 // ─────────────────────────────────────────────────────────────────────────────
 
-private val PEEK_DP     : Dp    = 10.dp   // vertical peek per card behind
+private val PEEK_DP     : Dp    = 16.dp   // vertical peek per card behind
 private val SCALE_STEP  : Float = 0.03f   // per-layer scale reduction
-private val ALPHA_STEP  : Float = 0.15f   // per-layer opacity reduction
+private val ALPHA_STEP  : Float = 0.12f   // per-layer opacity reduction
 private const val ESTIMATED_CARD_H = 78f  // approximate card height in dp
 
 @Composable
@@ -179,8 +179,8 @@ fun StackedClassCards(
             val collapsedScale = 1f - depth * SCALE_STEP
             val collapsedAlpha = (1f - depth * ALPHA_STEP).coerceAtLeast(0.3f)
 
-            // Expanded: spaced out vertically
-            val expandedY = depth * (ESTIMATED_CARD_H + 8f)
+            // Expanded: spaced out vertically with a comfortable gap
+            val expandedY = depth * (ESTIMATED_CARD_H + 12f)
 
             val animY by animateFloatAsState(
                 targetValue   = if (expanded) expandedY else collapsedY,
@@ -216,7 +216,7 @@ fun StackedClassCards(
 
         // Invisible spacer to reserve correct height so nothing below overlaps
         val requiredHeight = if (expanded) {
-            (cards.size * ESTIMATED_CARD_H + (cards.size - 1) * 8f).dp
+            (cards.size * ESTIMATED_CARD_H + (cards.size - 1) * 12f).dp
         } else {
             (ESTIMATED_CARD_H + (cards.size - 1) * PEEK_DP.value).dp
         }
@@ -283,7 +283,7 @@ fun ReminderListItem(
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// SectionHeader — used on every screen for consistent hierarchy
+// SectionHeader — small gray label used inside content areas
 // ─────────────────────────────────────────────────────────────────────────────
 
 @Composable
@@ -298,6 +298,27 @@ fun SectionHeader(
         color = TextSecondary,
         letterSpacing = 0.sp,
         modifier = modifier,
+    )
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// PageTitle — consistent bold UepBlue page-level title across ALL screens
+// 22sp, Bold. Container provides top=16dp via vertical=16 padding.
+// This ensures pixel-perfect consistency regardless of screen.
+// ─────────────────────────────────────────────────────────────────────────────
+
+@Composable
+fun PageTitle(
+    title: String,
+    modifier: Modifier = Modifier,
+) {
+    Text(
+        text = title,
+        fontSize = 22.sp,
+        fontWeight = FontWeight.Bold,
+        color = UepBlue,
+        letterSpacing = 0.sp,
+        modifier = modifier.padding(bottom = 12.dp),
     )
 }
 
@@ -353,7 +374,7 @@ fun EScheduleFab(
         modifier = modifier
             .size(52.dp)
             .appShadow(blur = 12.dp, spread = (-4).dp, cornerRadius = 26.dp)
-            .background(UepBlue, CircleShape)
+            .background(Color(0x99000000), CircleShape)   // black 60% — matches nav pill
             .clip(CircleShape)
             .clickable(
                 interactionSource = remember { MutableInteractionSource() },

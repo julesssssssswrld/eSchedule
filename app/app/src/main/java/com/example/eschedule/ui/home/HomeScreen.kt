@@ -21,18 +21,15 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.example.eschedule.ui.components.ClassCard
 import com.example.eschedule.ui.components.ClassCardData
+import com.example.eschedule.ui.components.PageTitle
 import com.example.eschedule.ui.components.ReminderItemData
 import com.example.eschedule.ui.components.ReminderListItem
 import com.example.eschedule.ui.components.SectionHeader
 import com.example.eschedule.ui.components.StackedClassCards
 import com.example.eschedule.ui.components.appShadow
-import com.example.eschedule.theme.TextSecondary
-import com.example.eschedule.theme.UepBlue
 
 @Composable
 fun HomeScreen(
@@ -85,17 +82,10 @@ fun HomeScreen(
         modifier = modifier
             .fillMaxSize()
             .verticalScroll(rememberScrollState())
-            .padding(horizontal = 20.dp),
+            .padding(horizontal = 20.dp, vertical = 16.dp),
     ) {
-        // ── Page title ─────────────────────────────────────────────────────────
-        Text(
-            text = "Dashboard",
-            fontSize = 28.sp,
-            fontWeight = FontWeight.Bold,
-            color = UepBlue,
-            letterSpacing = 0.sp,
-            modifier = Modifier.padding(bottom = 16.dp),
-        )
+        // ── Page title
+        PageTitle(title = "Dashboard")
 
         // ── Current class ─────────────────────────────────────────────────────
         SectionHeader(title = "Current Class")

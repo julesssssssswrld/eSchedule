@@ -24,7 +24,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.eschedule.theme.DividerColor
@@ -32,6 +31,7 @@ import com.example.eschedule.theme.TextTertiary
 import com.example.eschedule.theme.UepBlue
 import com.example.eschedule.ui.components.EScheduleFab
 import com.example.eschedule.ui.components.FilterChip
+import com.example.eschedule.ui.components.PageTitle
 import com.example.eschedule.ui.components.ReminderItemData
 import com.example.eschedule.ui.components.ReminderListItem
 import com.example.eschedule.ui.components.appShadow
@@ -78,15 +78,9 @@ fun RemindersScreen(
                 .verticalScroll(rememberScrollState())
                 .padding(horizontal = 20.dp, vertical = 16.dp),
         ) {
-            Text(
-                text = "Reminders",
-                fontSize = 28.sp,
-                fontWeight = FontWeight.Bold,
-                color = UepBlue,
-                letterSpacing = 0.sp,
-            )
+            PageTitle(title = "Reminders")
 
-            Spacer(Modifier.height(16.dp))
+            Spacer(Modifier.height(4.dp))
 
             // Filter chips — horizontally scrollable so they never wrap
             Row(

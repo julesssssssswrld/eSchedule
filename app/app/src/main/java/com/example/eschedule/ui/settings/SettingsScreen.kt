@@ -32,7 +32,7 @@ import com.example.eschedule.theme.TextSecondary
 import com.example.eschedule.theme.TextTertiary
 import com.example.eschedule.theme.UepBlue
 import com.example.eschedule.ui.components.AppIcons
-import com.example.eschedule.ui.components.SectionHeader
+import com.example.eschedule.ui.components.PageTitle
 import com.example.eschedule.ui.components.appShadow
 
 private data class SettingsItem(
@@ -71,9 +71,9 @@ fun SettingsScreen(
             .padding(horizontal = 20.dp, vertical = 16.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
-        SectionHeader(title = "Settings")
+        PageTitle(title = "Settings")
 
-        Spacer(Modifier.height(8.dp))
+        Spacer(Modifier.height(4.dp))
 
         SettingsGroupLabel("General")
         SettingsGroup(items = generalItems, onItemClick = onItemClick)
