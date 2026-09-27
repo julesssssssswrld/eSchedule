@@ -16,10 +16,10 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -32,11 +32,9 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.eschedule.theme.TextTertiary
 import com.example.eschedule.theme.UepBlue
 import com.example.eschedule.theme.UepYellow
 
-/** Tab destinations for the main bottom nav. */
 sealed interface TabRoute {
     data object Home : TabRoute
     data object Classes : TabRoute
@@ -50,8 +48,16 @@ private data class NavItem(
     val tab: TabRoute,
 )
 
-// Frosted glass white — enough transparency to feel floating
-private val GlassWhite = Color(0xE6FFFFFF) // ~90% opaque white
+// Black at 20% — dark frosted glass
+private val PillBg       = Color(0x33000000)
+private val PillBorder   = Color(0x22FFFFFF)
+private val ActiveTint   = Color.White
+private val InactiveTint = Color.White.copy(alpha = 0.45f)
+
+// Uniform icon + label dimensions so everything looks the same size
+private val NavIconSize   = 20.dp
+private val NavLabelSize  = 10.sp
+private val NavItemWidth  = 64.dp   // fixed width keeps columns identical
 
 @Composable
 fun BottomNavBar(
@@ -62,8 +68,8 @@ fun BottomNavBar(
 ) {
     val itemsLeft = remember {
         listOf(
-            NavItem("Home",    AppIcons.Home,    TabRoute.Home),
-            NavItem("Classes", AppIcons.Classes, TabRoute.Classes),
+            NavItem("Home",    AppIcons.Home,     TabRoute.Home),
+            NavItem("Classes", AppIcons.Classes,  TabRoute.Classes),
         )
     }
     val itemsRight = remember {
@@ -73,26 +79,26 @@ fun BottomNavBar(
         )
     }
 
+    // Total pill height
+    val pillHeight = 60.dp
+    // Scan FAB diameter — flush with pill top; 8dp protrudes above
+    val fabSize = 48.dp
+
     Box(
         modifier = modifier
             .fillMaxWidth()
             .navigationBarsPadding()
-            .padding(horizontal = 20.dp, vertical = 12.dp),
+            .padding(horizontal = 20.dp, vertical = 10.dp),
         contentAlignment = Alignment.BottomCenter,
     ) {
-        // ── Glassmorphism pill ────────────────────────────────────────────────
+        // ── Dark glassmorphism pill ───────────────────────────────────────────
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(64.dp)
-                .appShadow(blur = 10.dp, spread = (-5).dp, cornerRadius = 32.dp)
-                .background(GlassWhite, RoundedCornerShape(32.dp))
-                .border(
-                    width = 0.5.dp,
-                    color = Color.White.copy(alpha = 0.6f),
-                    shape = RoundedCornerShape(32.dp),
-                )
-                .padding(horizontal = 8.dp),
+                .height(pillHeight)
+                .appShadow(blur = 10.dp, spread = (-5).dp, cornerRadius = 30.dp)
+                .background(PillBg, RoundedCornerShape(30.dp))
+                .border(0.5.dp, PillBorder, RoundedCornerShape(30.dp)),
             horizontalArrangement = Arrangement.SpaceEvenly,
             verticalAlignment = Alignment.CenterVertically,
         ) {
@@ -101,45 +107,63 @@ fun BottomNavBar(
                     item = item,
                     isSelected = currentTab == item.tab,
                     onClick = { onTabSelected(item.tab) },
-                    modifier = Modifier.weight(1f),
                 )
             }
 
-            // Gap for floating scan button
-            Spacer(Modifier.weight(1f))
+            // Centre gap — exact same width as the FAB so layout is symmetric
+            Spacer(Modifier.width(fabSize))
 
             itemsRight.forEach { item ->
                 NavTabItem(
                     item = item,
                     isSelected = currentTab == item.tab,
                     onClick = { onTabSelected(item.tab) },
-                    modifier = Modifier.weight(1f),
                 )
             }
         }
 
-        // ── Floating scan FAB ─────────────────────────────────────────────────
-        Box(
-            modifier = Modifier
-                .align(Alignment.BottomCenter)
-                .padding(bottom = 8.dp)
-                .size(56.dp)
-                .appShadow(blur = 12.dp, spread = (-4).dp, cornerRadius = 28.dp)
-                .background(UepYellow, CircleShape)
-                .clip(CircleShape)
-                .clickable(
-                    interactionSource = remember { MutableInteractionSource() },
-                    indication = null,
-                    onClick = onScanClick,
-                ),
-            contentAlignment = Alignment.Center,
+        // ── Scan FAB — centred, protrudes just above pill top ─────────────────
+        // Column bottom aligns with Box bottom (same as pill bottom).
+        // Scan label (~18dp) + FAB (48dp) = 66dp > pillHeight(60dp)
+        // → FAB top sits 6dp above pill top ✓
+        Column(
+            modifier = Modifier.align(Alignment.BottomCenter),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(0.dp),
         ) {
-            Icon(
-                imageVector = AppIcons.Scan,
-                contentDescription = "Scan",
-                tint = UepBlue,
-                modifier = Modifier.size(26.dp),
-            )
+            Box(
+                modifier = Modifier
+                    .size(fabSize)
+                    .appShadow(blur = 10.dp, spread = (-3).dp, cornerRadius = fabSize / 2)
+                    .background(UepYellow, CircleShape)
+                    .clip(CircleShape)
+                    .clickable(
+                        interactionSource = remember { MutableInteractionSource() },
+                        indication = null,
+                        onClick = onScanClick,
+                    ),
+                contentAlignment = Alignment.Center,
+            ) {
+                Icon(
+                    imageVector = AppIcons.Scan,
+                    contentDescription = "Scan",
+                    tint = UepBlue,
+                    modifier = Modifier.size(NavIconSize),
+                )
+            }
+            // Label matches exact height of other tab labels so alignment is uniform
+            Box(
+                modifier = Modifier.height((pillHeight - fabSize) / 2 + 14.dp),
+                contentAlignment = Alignment.Center,
+            ) {
+                Text(
+                    text = "Scan",
+                    fontSize = NavLabelSize,
+                    fontWeight = FontWeight.Normal,
+                    color = InactiveTint,
+                    letterSpacing = 0.sp,
+                )
+            }
         }
     }
 }
@@ -149,17 +173,17 @@ private fun NavTabItem(
     item: NavItem,
     isSelected: Boolean,
     onClick: () -> Unit,
-    modifier: Modifier = Modifier,
 ) {
     val tint by animateColorAsState(
-        targetValue = if (isSelected) UepBlue else TextTertiary,
+        targetValue = if (isSelected) ActiveTint else InactiveTint,
         animationSpec = tween(durationMillis = 180),
-        label = "nav_tint",
+        label = "nav_tint_${item.label}",
     )
 
     Column(
-        modifier = modifier
-            .clip(RoundedCornerShape(12.dp))
+        modifier = Modifier
+            .width(NavItemWidth)
+            .clip(RoundedCornerShape(10.dp))
             .clickable(
                 interactionSource = remember { MutableInteractionSource() },
                 indication = null,
@@ -173,11 +197,11 @@ private fun NavTabItem(
             imageVector = item.icon,
             contentDescription = item.label,
             tint = tint,
-            modifier = Modifier.size(22.dp),
+            modifier = Modifier.size(NavIconSize),
         )
         Text(
             text = item.label,
-            fontSize = 10.sp,
+            fontSize = NavLabelSize,
             fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal,
             color = tint,
             letterSpacing = 0.sp,

@@ -7,8 +7,10 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -16,10 +18,11 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.ExpandMore
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CheckboxDefaults
 import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
@@ -54,51 +57,60 @@ fun ClassCard(
     Box(
         modifier = modifier
             .fillMaxWidth()
-            .appShadow(cornerRadius = 14.dp)
-            .background(Color.White, RoundedCornerShape(14.dp))
-            .clip(RoundedCornerShape(14.dp))
+            .appShadow(cornerRadius = 12.dp)
+            .background(Color.White, RoundedCornerShape(12.dp))
+            .clip(RoundedCornerShape(12.dp))
             .clickable { onClick() },
     ) {
+        // IntrinsicSize.Min makes the Row adopt the height of its tallest child
+        // so the blue accent bar always matches the card content height
         Row(
-            modifier = Modifier.padding(16.dp),
+            modifier = Modifier
+                .height(IntrinsicSize.Min)
+                .padding(vertical = 10.dp, horizontal = 14.dp),
             verticalAlignment = Alignment.Top,
         ) {
-            // Blue left accent bar
             Box(
                 modifier = Modifier
                     .width(3.dp)
-                    .height(48.dp)
+                    .fillMaxHeight()
                     .background(UepBlue, RoundedCornerShape(2.dp)),
             )
-            Spacer(Modifier.width(12.dp))
-            Column(modifier = Modifier.weight(1f)) {
+            Spacer(Modifier.width(10.dp))
+            Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(0.dp)) {
                 Text(
                     text = data.title,
-                    style = MaterialTheme.typography.bodyMedium,
+                    fontSize = 14.sp,
                     fontWeight = FontWeight.SemiBold,
-                    color = MaterialTheme.colorScheme.onSurface,
-                    lineHeight = 20.sp,
+                    color = Color(0xFF1A1A1A),
+                    letterSpacing = 0.sp,
+                    lineHeight = 18.sp,
                 )
-                Spacer(Modifier.height(4.dp))
                 Text(
                     text = data.timeRange,
-                    style = MaterialTheme.typography.bodySmall,
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.Normal,
                     color = TextSecondary,
                     letterSpacing = 0.sp,
+                    lineHeight = 16.sp,
                 )
                 Text(
                     text = data.location,
-                    style = MaterialTheme.typography.bodySmall,
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.Normal,
                     color = TextTertiary,
                     letterSpacing = 0.sp,
+                    lineHeight = 16.sp,
                 )
             }
             if (data.isExpandable) {
                 Icon(
-                    imageVector = AppIcons.Expand,
+                    imageVector = Icons.Outlined.ExpandMore,
                     contentDescription = "Expand",
                     tint = TextTertiary,
-                    modifier = Modifier.size(18.dp),
+                    modifier = Modifier
+                        .size(16.dp)
+                        .align(Alignment.CenterVertically),
                 )
             }
         }
@@ -125,7 +137,7 @@ fun ReminderListItem(
     Row(
         modifier = modifier
             .fillMaxWidth()
-            .padding(vertical = 10.dp, horizontal = 4.dp),
+            .padding(vertical = 9.dp, horizontal = 2.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Checkbox(
@@ -137,19 +149,18 @@ fun ReminderListItem(
             ),
             modifier = Modifier.size(20.dp),
         )
-        Spacer(Modifier.width(12.dp))
+        Spacer(Modifier.width(10.dp))
         Text(
             text = data.title,
-            fontSize = 14.sp,
+            fontSize = 13.sp,
             fontWeight = if (data.isCompleted) FontWeight.Normal else FontWeight.Medium,
-            color = if (data.isCompleted) TextTertiary
-                    else MaterialTheme.colorScheme.onSurface,
+            color = if (data.isCompleted) TextTertiary else Color(0xFF1A1A1A),
             letterSpacing = 0.sp,
             modifier = Modifier.weight(1f),
         )
         Text(
             text = data.dueLabel,
-            fontSize = 12.sp,
+            fontSize = 11.sp,
             color = TextTertiary,
             letterSpacing = 0.sp,
         )
@@ -160,7 +171,7 @@ fun ReminderListItem(
                 contentDescription = "More",
                 tint = TextTertiary,
                 modifier = Modifier
-                    .size(16.dp)
+                    .size(14.dp)
                     .clickable(
                         interactionSource = remember { MutableInteractionSource() },
                         indication = null,
@@ -180,10 +191,10 @@ fun SectionHeader(
 ) {
     Text(
         text = title,
-        fontSize = 22.sp,
+        fontSize = 18.sp,
         fontWeight = FontWeight.Bold,
         color = UepBlue,
-        letterSpacing = (-0.3).sp,
+        letterSpacing = (-0.2).sp,
         modifier = modifier,
     )
 }
@@ -197,9 +208,9 @@ fun FilterChip(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val bg    = if (selected) UepBlue else Color.White
-    val fg    = if (selected) Color.White else TextSecondary
-    val bord  = if (selected) Color.Transparent else DividerColor
+    val bg   = if (selected) UepBlue else Color.White
+    val fg   = if (selected) Color.White else TextSecondary
+    val bord = if (selected) Color.Transparent else DividerColor
 
     Box(
         modifier = modifier
@@ -244,7 +255,7 @@ fun EScheduleFab(
             imageVector = AppIcons.Add,
             contentDescription = "Add",
             tint = Color.White,
-            modifier = Modifier.size(26.dp),
+            modifier = Modifier.size(24.dp),
         )
     }
 }

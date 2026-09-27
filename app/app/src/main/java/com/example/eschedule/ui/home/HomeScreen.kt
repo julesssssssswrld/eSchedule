@@ -71,46 +71,52 @@ fun HomeScreen(
             .fillMaxSize()
             .verticalScroll(rememberScrollState())
             .padding(horizontal = 20.dp, vertical = 16.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp),
+        verticalArrangement = Arrangement.spacedBy(28.dp), // space between sections
     ) {
-        // Current class
-        SectionHeader(title = "Current Class")
-        ClassCard(data = currentClass, onClick = { onClassClick(currentClass.id) })
-
-        // Upcoming classes
-        SectionHeader(title = "Upcoming Classes")
-        upcomingClasses.forEach { cls ->
-            ClassCard(
-                data = cls,
-                onClick = { onClassClick(cls.id) },
-            )
+        // ── Current class ──────────────────────────────────────────────────────
+        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            SectionHeader(title = "Current Class")
+            ClassCard(data = currentClass, onClick = { onClassClick(currentClass.id) })
         }
 
-        // Reminders
-        SectionHeader(title = "Reminders")
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .appShadow(cornerRadius = 14.dp)
-                .background(Color.White, RoundedCornerShape(14.dp))
-                .padding(horizontal = 12.dp, vertical = 4.dp),
-        ) {
-            Column {
-                reminders.forEach { reminder ->
-                    ReminderListItem(
-                        data = reminder.copy(isCompleted = checkedIds.contains(reminder.id)),
-                        onCheckedChange = { checked ->
-                            checkedIds = if (checked) checkedIds + reminder.id
-                            else checkedIds - reminder.id
-                        },
-                        onMoreClick = { onReminderMoreClick(reminder.id) },
-                        showMoreButton = false,
-                    )
+        // ── Upcoming classes ───────────────────────────────────────────────────
+        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            SectionHeader(title = "Upcoming Classes")
+            upcomingClasses.forEach { cls ->
+                ClassCard(
+                    data = cls,
+                    onClick = { onClassClick(cls.id) },
+                )
+            }
+        }
+
+        // ── Reminders ──────────────────────────────────────────────────────────
+        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            SectionHeader(title = "Reminders")
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .appShadow(cornerRadius = 14.dp)
+                    .background(Color.White, RoundedCornerShape(14.dp))
+                    .padding(horizontal = 12.dp, vertical = 4.dp),
+            ) {
+                Column {
+                    reminders.forEach { reminder ->
+                        ReminderListItem(
+                            data = reminder.copy(isCompleted = checkedIds.contains(reminder.id)),
+                            onCheckedChange = { checked ->
+                                checkedIds = if (checked) checkedIds + reminder.id
+                                else checkedIds - reminder.id
+                            },
+                            onMoreClick = { onReminderMoreClick(reminder.id) },
+                            showMoreButton = false,
+                        )
+                    }
                 }
             }
         }
 
-        // Bottom spacing for nav bar
-        Spacer(Modifier.height(80.dp))
+        // Bottom spacing so content clears the floating nav bar
+        Spacer(Modifier.height(88.dp))
     }
 }

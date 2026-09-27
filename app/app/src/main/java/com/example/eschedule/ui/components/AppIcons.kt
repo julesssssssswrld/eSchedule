@@ -1,18 +1,20 @@
 package com.example.eschedule.ui.components
 
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.PathFillType
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.graphics.vector.addPathNodes
+import androidx.compose.ui.graphics.vector.group
 import androidx.compose.ui.unit.dp
 
 /**
- * All SVG icons as Compose [ImageVector] instances.
- * Path data is taken verbatim from the project's /svg assets/ folder.
- * viewBox: 960×960 (Material Symbols standard).
+ * All SVG icons sourced from /svg assets/ (Material Symbols, viewBox="0 -960 960 960").
  *
- * Icons are built with a Black fill so Compose's Icon tint ColorFilter
- * correctly replaces the color at render time.
+ * Compose's ImageVector.Builder has no minY support, so the viewBox Y offset of -960
+ * is compensated by wrapping each path in a group with translationY = 960f.
+ * This shifts the path coordinates (which live in the -960…0 Y range) into the
+ * 0…960 space that the 960×960 viewport expects.
  */
 object AppIcons {
 
@@ -70,8 +72,11 @@ object AppIcons {
 }
 
 /**
- * Builds a 960×960 viewport Material Symbols icon with a Black fill,
- * so Compose's [Icon] tint ColorFilter correctly replaces it at render time.
+ * Builds a Material Symbols icon correctly accounting for its viewBox="0 -960 960 960".
+ *
+ * Compose ImageVector has no minY, so we set the viewport to 960×960 and wrap the path
+ * in a group with translationY=+960 to shift the -960…0 Y coords into the 0…960 range.
+ * EvenOdd fill rule is required so hollow shapes (gear, bell, etc.) render correctly.
  */
 private fun icon(name: String, pathData: String): ImageVector =
     ImageVector.Builder(
@@ -80,7 +85,12 @@ private fun icon(name: String, pathData: String): ImageVector =
         defaultHeight = 24.dp,
         viewportWidth = 960f,
         viewportHeight = 960f,
-    ).addPath(
-        pathData = addPathNodes(pathData),
-        fill = SolidColor(Color.Black),
-    ).build()
+    ).apply {
+        group(translationY = 960f) {
+            addPath(
+                pathData = addPathNodes(pathData),
+                fill = SolidColor(Color.Black),
+                pathFillType = PathFillType.EvenOdd,
+            )
+        }
+    }.build()
