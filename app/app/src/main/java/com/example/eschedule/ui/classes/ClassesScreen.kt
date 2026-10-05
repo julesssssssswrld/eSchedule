@@ -108,7 +108,7 @@ fun ClassesScreen(
             // ── Title
             PageTitle(
                 title = "Class Schedule",
-                modifier = Modifier.padding(start = 20.dp, end = 20.dp, top = 16.dp),
+                modifier = Modifier.padding(horizontal = 20.dp),
             )
 
             // ── Sticky day-header row ─────────────────────────────────────────
@@ -166,7 +166,7 @@ fun ClassesScreen(
             onClick = onAddClass,
             modifier = Modifier
                 .align(Alignment.BottomEnd)
-                .padding(end = 20.dp, bottom = 100.dp),
+                .padding(end = 20.dp, bottom = 120.dp),
         )
     }
 }

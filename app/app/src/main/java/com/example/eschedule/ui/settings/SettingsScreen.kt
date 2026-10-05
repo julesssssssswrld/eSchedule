@@ -68,7 +68,7 @@ fun SettingsScreen(
         modifier = modifier
             .fillMaxSize()
             .verticalScroll(rememberScrollState())
-            .padding(horizontal = 20.dp, vertical = 16.dp),
+            .padding(horizontal = 20.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         PageTitle(title = "Settings")

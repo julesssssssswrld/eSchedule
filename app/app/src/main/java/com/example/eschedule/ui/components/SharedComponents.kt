@@ -1,11 +1,10 @@
 package com.example.eschedule.ui.components
 
-import androidx.compose.animation.core.FastOutSlowInEasing
-import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.tween
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -25,6 +24,8 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CheckboxDefaults
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -44,6 +45,9 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
 import com.example.eschedule.theme.DividerColor
 import com.example.eschedule.theme.TextSecondary
 import com.example.eschedule.theme.TextTertiary
@@ -204,18 +208,20 @@ fun StackedClassCards(
                 } else null,
                 modifier       = Modifier
                     .zIndex((cards.size - index).toFloat())
+                    .graphicsLayer {
+                        scaleX = animScale
+                        scaleY = animScale
+                        alpha  = animAlpha
+                    }
                     .layout { measurable, constraints ->
                         val placeable = measurable.measure(constraints)
-                        // yPx is the absolute Y position of this card in dp→px
                         val yPx = animY.dp.roundToPx()
-                        // Report occupied height = card height + y offset so the
-                        // parent Box grows to fit ALL stacked cards exactly.
+                        // Report height = card height + y offset so the parent
+                        // Box grows to exactly fit all stacked/expanded cards.
                         layout(placeable.width, placeable.height + yPx) {
-                            placeable.placeRelativeWithLayer(x = 0, y = yPx) {
-                                scaleX = animScale
-                                scaleY = animScale
-                                alpha  = animAlpha
-                            }
+                            // Place in layout space (not GPU layer) so the layout
+                            // system tracks the real position and won't clip.
+                            placeable.placeRelative(x = 0, y = yPx)
                         }
                     },
             )
@@ -234,45 +240,105 @@ data class ReminderItemData(
     val isCompleted: Boolean = false,
 )
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun ReminderListItem(
     data: ReminderItemData,
     onCheckedChange: (Boolean) -> Unit,
     onMoreClick: () -> Unit,
+    onEditClick: (() -> Unit)? = null,
+    onDeleteClick: (() -> Unit)? = null,
     modifier: Modifier = Modifier,
     showMoreButton: Boolean = true,
 ) {
-    Row(
+    var showMenu by remember { mutableStateOf(false) }
+
+    Box(
         modifier = modifier
             .fillMaxWidth()
-            .padding(vertical = 10.dp),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Checkbox(
-            checked = data.isCompleted,
-            onCheckedChange = onCheckedChange,
-            modifier = Modifier.size(20.dp),
-            colors = CheckboxDefaults.colors(
-                checkedColor   = UepBlue,
-                uncheckedColor = DividerColor,
+            .combinedClickable(
+                interactionSource = remember { MutableInteractionSource() },
+                indication = null,
+                onClick = {},
+                onLongClick = {
+                    if (onEditClick != null || onDeleteClick != null) showMenu = true
+                },
             ),
-        )
-        Spacer(Modifier.width(10.dp))
-        Text(
-            text = data.title,
-            fontSize = 14.sp,
-            fontWeight = FontWeight.Normal,
-            color = if (data.isCompleted) TextTertiary else Color(0xFF1A1A1A),
-            textDecoration = if (data.isCompleted) TextDecoration.LineThrough else null,
-            modifier = Modifier.weight(1f),
-            letterSpacing = 0.sp,
-        )
-        Text(
-            text = data.dueLabel,
-            fontSize = 12.sp,
-            color = TextTertiary,
-            letterSpacing = 0.sp,
-        )
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 10.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Checkbox(
+                checked = data.isCompleted,
+                onCheckedChange = onCheckedChange,
+                modifier = Modifier.size(20.dp),
+                colors = CheckboxDefaults.colors(
+                    checkedColor   = UepBlue,
+                    uncheckedColor = DividerColor,
+                ),
+            )
+            Spacer(Modifier.width(10.dp))
+            Text(
+                text = data.title,
+                fontSize = 14.sp,
+                fontWeight = FontWeight.Normal,
+                color = if (data.isCompleted) TextTertiary else Color(0xFF1A1A1A),
+                textDecoration = if (data.isCompleted) TextDecoration.LineThrough else null,
+                modifier = Modifier.weight(1f),
+                letterSpacing = 0.sp,
+            )
+            Text(
+                text = data.dueLabel,
+                fontSize = 12.sp,
+                color = TextTertiary,
+                letterSpacing = 0.sp,
+            )
+            if (showMoreButton) {
+                Spacer(Modifier.width(8.dp))
+                Box(
+                    modifier = Modifier
+                        .size(28.dp)
+                        .clip(CircleShape)
+                        .clickable(
+                            interactionSource = remember { MutableInteractionSource() },
+                            indication = null,
+                            onClick = onMoreClick,
+                        ),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Icon(
+                        imageVector = AppIcons.ThreeDot,
+                        contentDescription = "More options",
+                        tint = TextTertiary,
+                        modifier = Modifier.size(16.dp),
+                    )
+                }
+            }
+        }
+
+        // Long-press context menu
+        DropdownMenu(
+            expanded = showMenu,
+            onDismissRequest = { showMenu = false },
+        ) {
+            if (onEditClick != null) {
+                DropdownMenuItem(
+                    text = { Text("Edit", fontSize = 14.sp) },
+                    leadingIcon = { Icon(AppIcons.Edit, null, Modifier.size(18.dp)) },
+                    onClick = { onEditClick(); showMenu = false },
+                )
+            }
+            if (onDeleteClick != null) {
+                DropdownMenuItem(
+                    text = { Text("Delete", fontSize = 14.sp, color = Color(0xFFE53935)) },
+                    leadingIcon = { Icon(AppIcons.Delete, null, Modifier.size(18.dp), tint = Color(0xFFE53935)) },
+                    onClick = { onDeleteClick(); showMenu = false },
+                )
+            }
+        }
     }
 }
 

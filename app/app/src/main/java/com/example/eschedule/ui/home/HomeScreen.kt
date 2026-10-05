@@ -28,13 +28,13 @@ import com.example.eschedule.ui.components.PageTitle
 import com.example.eschedule.ui.components.ReminderItemData
 import com.example.eschedule.ui.components.ReminderListItem
 import com.example.eschedule.ui.components.SectionHeader
-import com.example.eschedule.ui.components.StackedClassCards
 import com.example.eschedule.ui.components.appShadow
 
 @Composable
 fun HomeScreen(
     onClassClick: (String) -> Unit,
     onReminderMoreClick: (String) -> Unit,
+    onReminderEditClick: (String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val currentClass = remember {
@@ -83,7 +83,7 @@ fun HomeScreen(
         // ── Sticky page title ─────────────────────────────────────────────────
         PageTitle(
             title = "Dashboard",
-            modifier = Modifier.padding(horizontal = 20.dp, vertical = 16.dp),
+            modifier = Modifier.padding(horizontal = 20.dp),
         )
 
         // ── Scrollable content ────────────────────────────────────────────────
@@ -106,7 +106,14 @@ fun HomeScreen(
             // ── Upcoming classes
             SectionHeader(title = "Upcoming Classes")
             Spacer(Modifier.height(8.dp))
-            StackedClassCards(cards = upcomingClasses)
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                upcomingClasses.forEach { cls ->
+                    ClassCard(
+                        data = cls,
+                        onClick = { onClassClick(cls.id) },
+                    )
+                }
+            }
 
             Spacer(Modifier.height(16.dp))
 
@@ -129,7 +136,9 @@ fun HomeScreen(
                                 else checkedIds - reminder.id
                             },
                             onMoreClick = { onReminderMoreClick(reminder.id) },
-                            showMoreButton = false,
+                            onEditClick = { onReminderEditClick(reminder.id) },
+                            onDeleteClick = { /* TODO: hook to data layer */ },
+                            showMoreButton = true,
                         )
                     }
                 }

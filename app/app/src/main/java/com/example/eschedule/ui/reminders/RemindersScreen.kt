@@ -24,6 +24,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.unit.dp
 import com.example.eschedule.theme.DividerColor
 import com.example.eschedule.theme.TextTertiary
@@ -42,6 +43,7 @@ private val FILTERS = listOf("All", "Today", "Week", "Month", "Completed")
 fun RemindersScreen(
     onAddReminder: () -> Unit,
     onReminderMoreClick: (String) -> Unit,
+    onReminderEditClick: (String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val activeReminders = remember {
@@ -78,7 +80,7 @@ fun RemindersScreen(
             // ── Sticky page title ─────────────────────────────────────────────
             PageTitle(
                 title = "Reminders",
-                modifier = Modifier.padding(horizontal = 20.dp, vertical = 16.dp),
+                modifier = Modifier.padding(horizontal = 20.dp),
             )
 
             // ── Scrollable content ────────────────────────────────────────────
@@ -121,6 +123,8 @@ fun RemindersScreen(
                                     else checkedIds - reminder.id
                                 },
                                 onMoreClick = { onReminderMoreClick(reminder.id) },
+                                onEditClick = { onReminderEditClick(reminder.id) },
+                                onDeleteClick = { /* TODO: hook to data layer */ },
                             )
                         }
                     }
@@ -143,12 +147,14 @@ fun RemindersScreen(
                     ) {
                         Column {
                             completedReminders.forEach { reminder ->
-                                ReminderListItem(
-                                    data = reminder,
-                                    onCheckedChange = {},
-                                    onMoreClick = { onReminderMoreClick(reminder.id) },
-                                    showMoreButton = false,
-                                )
+                                Box(modifier = Modifier.graphicsLayer(alpha = 0.45f)) {
+                                    ReminderListItem(
+                                        data = reminder,
+                                        onCheckedChange = {},
+                                        onMoreClick = { onReminderMoreClick(reminder.id) },
+                                        showMoreButton = false,
+                                    )
+                                }
                             }
                         }
                     }
@@ -162,7 +168,7 @@ fun RemindersScreen(
             onClick = onAddReminder,
             modifier = Modifier
                 .align(Alignment.BottomEnd)
-                .padding(end = 20.dp, bottom = 100.dp),
+                .padding(end = 20.dp, bottom = 120.dp),
         )
     }
 }

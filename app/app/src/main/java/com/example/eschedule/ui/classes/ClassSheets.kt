@@ -1,5 +1,7 @@
 package com.example.eschedule.ui.classes
 
+import android.app.DatePickerDialog
+import android.app.TimePickerDialog
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -18,19 +20,17 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.Switch
-import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
-import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -38,14 +38,19 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.example.eschedule.theme.DividerColor
 import com.example.eschedule.theme.TextSecondary
 import com.example.eschedule.theme.TextTertiary
 import com.example.eschedule.theme.UepBlue
 import com.example.eschedule.ui.components.AppIcons
 import com.example.eschedule.ui.components.appShadow
+import java.util.Calendar
 
 private val DAY_LABELS = listOf("S", "M", "T", "W", "Th", "F", "S")
 
@@ -58,15 +63,64 @@ fun ClassSheet(
     onDismiss: () -> Unit,
     onSave: (title: String, selectedDays: Set<Int>) -> Unit,
 ) {
-    val sheetState = rememberModalBottomSheetState()
+    val context = LocalContext.current
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     var title by remember { mutableStateOf(initialTitle) }
-    var startsText by remember { mutableStateOf("7:00 AM") }
-    var endsText by remember { mutableStateOf("9:00 AM") }
+    var selectedDays by remember { mutableStateOf(initialSelectedDays) }
+
+    // ── Date pickers ─────────────────────────────────────────────────────────
+    val cal = remember { Calendar.getInstance() }
     var fromText by remember { mutableStateOf("August 1, 2026") }
     var untilText by remember { mutableStateOf("December 17, 2026") }
-    var selectedDays by remember { mutableStateOf(initialSelectedDays) }
+    var showFromPicker  by remember { mutableStateOf(false) }
+    var showUntilPicker by remember { mutableStateOf(false) }
+
+    if (showFromPicker) {
+        LaunchedEffect(Unit) {
+            DatePickerDialog(
+                context,
+                { _, y, m, d -> fromText = "${monthName(m)} $d, $y"; showFromPicker = false },
+                cal.get(Calendar.YEAR), cal.get(Calendar.MONTH), cal.get(Calendar.DAY_OF_MONTH),
+            ).apply { setOnDismissListener { showFromPicker = false } }.show()
+        }
+    }
+    if (showUntilPicker) {
+        LaunchedEffect(Unit) {
+            DatePickerDialog(
+                context,
+                { _, y, m, d -> untilText = "${monthName(m)} $d, $y"; showUntilPicker = false },
+                cal.get(Calendar.YEAR), cal.get(Calendar.MONTH), cal.get(Calendar.DAY_OF_MONTH),
+            ).apply { setOnDismissListener { showUntilPicker = false } }.show()
+        }
+    }
+
+    // ── Time pickers ─────────────────────────────────────────────────────────
+    var startsText by remember { mutableStateOf("7:00 AM") }
+    var endsText   by remember { mutableStateOf("9:00 AM") }
+    var showStartsPicker by remember { mutableStateOf(false) }
+    var showEndsPicker   by remember { mutableStateOf(false) }
+
+    if (showStartsPicker) {
+        LaunchedEffect(Unit) {
+            TimePickerDialog(
+                context,
+                { _, h, m -> startsText = formatTime(h, m); showStartsPicker = false },
+                7, 0, false,
+            ).apply { setOnDismissListener { showStartsPicker = false } }.show()
+        }
+    }
+    if (showEndsPicker) {
+        LaunchedEffect(Unit) {
+            TimePickerDialog(
+                context,
+                { _, h, m -> endsText = formatTime(h, m); showEndsPicker = false },
+                9, 0, false,
+            ).apply { setOnDismissListener { showEndsPicker = false } }.show()
+        }
+    }
+
     var locationText by remember { mutableStateOf("") }
-    var descText by remember { mutableStateOf("") }
+    var descText     by remember { mutableStateOf("") }
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,
@@ -95,22 +149,20 @@ fun ClassSheet(
                 ClassSaveButton(onClick = { onSave(title, selectedDays) })
             }
 
-            // Title field
             ClassTitleField(value = title, onValueChange = { title = it })
 
-            // Options section
             Text(text = "Options", style = MaterialTheme.typography.labelMedium, color = TextSecondary)
             ClassOptionsCard {
-                ClassTimeRow("Starts", startsText) { startsText = it }
+                ClassTimeRow("Starts", startsText) { showStartsPicker = true }
                 HorizontalDivider(color = DividerColor, thickness = 0.5.dp)
-                ClassTimeRow("Ends", endsText) { endsText = it }
+                ClassTimeRow("Ends", endsText) { showEndsPicker = true }
                 HorizontalDivider(color = DividerColor, thickness = 0.5.dp)
-                ClassTimeRow("From", fromText) { fromText = it }
+                ClassTimeRow("From", fromText) { showFromPicker = true }
                 HorizontalDivider(color = DividerColor, thickness = 0.5.dp)
-                ClassTimeRow("Until", untilText) { untilText = it }
+                ClassTimeRow("Until", untilText) { showUntilPicker = true }
                 HorizontalDivider(color = DividerColor, thickness = 0.5.dp)
 
-                // Repeat day selector
+                // Repeat day selector — evenly distributed
                 Column(modifier = Modifier.padding(vertical = 12.dp)) {
                     Text(
                         text = "Repeat",
@@ -119,7 +171,8 @@ fun ClassSheet(
                     )
                     Spacer(Modifier.height(10.dp))
                     Row(
-                        horizontalArrangement = Arrangement.spacedBy(6.dp),
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
                     ) {
                         DAY_LABELS.forEachIndexed { index, label ->
                             val isSelected = selectedDays.contains(index)
@@ -136,18 +189,16 @@ fun ClassSheet(
                 }
             }
 
-            // Location
             Text(text = "Location", style = MaterialTheme.typography.labelMedium, color = TextSecondary)
-            ClassInputRow(
+            ClassGrowingInputRow(
                 icon = { Icon(AppIcons.Location, null, tint = TextTertiary, modifier = Modifier.size(20.dp)) },
                 placeholder = "Add Location",
                 value = locationText,
                 onValueChange = { locationText = it },
             )
 
-            // Description
             Text(text = "Description / Additional Information", style = MaterialTheme.typography.labelMedium, color = TextSecondary)
-            ClassInputRow(
+            ClassGrowingInputRow(
                 icon = { Icon(AppIcons.Pencil, null, tint = TextTertiary, modifier = Modifier.size(20.dp)) },
                 placeholder = "Description",
                 value = descText,
@@ -159,7 +210,7 @@ fun ClassSheet(
     }
 }
 
-// ─── View Class bottom sheet ─────────────────────────────────────────────────────
+// ─── View Class bottom sheet ─────────────────────────────────────────────────
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -169,7 +220,7 @@ fun ViewClassSheet(
     onEdit: () -> Unit,
     onDelete: () -> Unit,
 ) {
-    val sheetState = rememberModalBottomSheetState()
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,
@@ -194,10 +245,9 @@ fun ViewClassSheet(
                 )
                 ClassIconAction(icon = AppIcons.Delete, description = "Delete", onClick = onDelete)
                 Spacer(Modifier.width(8.dp))
-                ClassIconAction(icon = AppIcons.Edit, description = "Edit", onClick = onEdit)
+                ClassIconAction(icon = AppIcons.Edit,   description = "Edit",   onClick = onEdit)
             }
 
-            // Class summary with left border
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -215,7 +265,7 @@ fun ViewClassSheet(
                     Text("IT102 - Mobile App Development", style = MaterialTheme.typography.titleMedium)
                     Spacer(Modifier.height(4.dp))
                     Text("Repeats every Tuesday & Thursday", style = MaterialTheme.typography.bodySmall, color = TextSecondary)
-                    Text("8:00 AM - 9:00 AM", style = MaterialTheme.typography.bodySmall, color = TextSecondary)
+                    Text("8:00 AM - 9:00 AM",               style = MaterialTheme.typography.bodySmall, color = TextSecondary)
                 }
             }
 
@@ -236,7 +286,7 @@ fun ViewClassSheet(
     }
 }
 
-// ─── Private helpers ─────────────────────────────────────────────────────────────
+// ─── Private helpers ─────────────────────────────────────────────────────────
 
 @Composable
 private fun ClassSaveButton(onClick: () -> Unit) {
@@ -266,18 +316,22 @@ private fun ClassTitleField(value: String, onValueChange: (String) -> Unit) {
                 .height(52.dp)
                 .background(UepBlue, RoundedCornerShape(topStart = 8.dp, bottomStart = 8.dp)),
         )
-        TextField(
+        Spacer(Modifier.width(10.dp))
+        BasicTextField(
             value = value,
             onValueChange = onValueChange,
-            placeholder = { Text("Title", color = TextTertiary) },
-            colors = TextFieldDefaults.colors(
-                focusedContainerColor = Color.Transparent,
-                unfocusedContainerColor = Color.Transparent,
-                focusedIndicatorColor = Color.Transparent,
-                unfocusedIndicatorColor = Color.Transparent,
-            ),
-            modifier = Modifier.fillMaxWidth(),
+            textStyle = TextStyle(fontSize = 16.sp, color = Color(0xFF1A1A1A)),
             singleLine = true,
+            cursorBrush = SolidColor(UepBlue),
+            modifier = Modifier
+                .weight(1f)
+                .padding(end = 12.dp, top = 14.dp, bottom = 14.dp),
+            decorationBox = { innerTextField ->
+                Box {
+                    if (value.isEmpty()) Text("Title", color = TextTertiary, fontSize = 16.sp)
+                    innerTextField()
+                }
+            },
         )
     }
 }
@@ -296,26 +350,38 @@ private fun ClassOptionsCard(content: @Composable () -> Unit) {
 }
 
 @Composable
-private fun ClassTimeRow(label: String, value: String, onValueChange: (String) -> Unit) {
+private fun ClassTimeRow(label: String, value: String, onClick: () -> Unit) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .padding(vertical = 12.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Text(text = label, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Medium, modifier = Modifier.weight(1f))
-        Row(verticalAlignment = Alignment.CenterVertically) {
+        Text(
+            text = label,
+            style = MaterialTheme.typography.bodyMedium,
+            fontWeight = FontWeight.Medium,
+            modifier = Modifier.weight(1f),
+        )
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.clickable(
+                interactionSource = remember { MutableInteractionSource() },
+                indication = null,
+                onClick = onClick,
+            ),
+        ) {
             Text(value, style = MaterialTheme.typography.bodyMedium, color = TextSecondary)
             Spacer(Modifier.width(4.dp))
-            Icon(AppIcons.Expand, contentDescription = null, tint = TextSecondary, modifier = Modifier.size(16.dp))
+            Icon(AppIcons.Expand, null, tint = TextSecondary, modifier = Modifier.size(16.dp))
         }
     }
 }
 
 @Composable
 private fun DayChip(label: String, selected: Boolean, onClick: () -> Unit) {
-    val bg = if (selected) UepBlue else Color.White
-    val border = if (selected) UepBlue else TextTertiary
+    val bg        = if (selected) UepBlue else Color.White
+    val border    = if (selected) UepBlue else TextTertiary
     val textColor = if (selected) Color.White else TextTertiary
 
     Box(
@@ -331,7 +397,7 @@ private fun DayChip(label: String, selected: Boolean, onClick: () -> Unit) {
 }
 
 @Composable
-private fun ClassInputRow(
+private fun ClassGrowingInputRow(
     icon: @Composable () -> Unit,
     placeholder: String,
     value: String,
@@ -340,24 +406,27 @@ private fun ClassInputRow(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .border(0.5.dp, DividerColor, RoundedCornerShape(8.dp))
+            .appShadow(cornerRadius = 10.dp)
+            .background(Color.White, RoundedCornerShape(8.dp))
             .padding(horizontal = 12.dp, vertical = 10.dp),
-        verticalAlignment = Alignment.CenterVertically,
+        verticalAlignment = Alignment.Top,
         horizontalArrangement = Arrangement.spacedBy(10.dp),
     ) {
-        icon()
-        TextField(
+        Box(modifier = Modifier.padding(top = 2.dp)) { icon() }
+        BasicTextField(
             value = value,
             onValueChange = onValueChange,
-            placeholder = { Text(placeholder, color = TextTertiary, style = MaterialTheme.typography.bodyMedium) },
-            colors = TextFieldDefaults.colors(
-                focusedContainerColor = Color.Transparent,
-                unfocusedContainerColor = Color.Transparent,
-                focusedIndicatorColor = Color.Transparent,
-                unfocusedIndicatorColor = Color.Transparent,
-            ),
-            modifier = Modifier.weight(1f),
-            textStyle = MaterialTheme.typography.bodyMedium,
+            textStyle = TextStyle(fontSize = 14.sp, color = Color(0xFF1A1A1A), lineHeight = 20.sp),
+            cursorBrush = SolidColor(UepBlue),
+            modifier = Modifier
+                .weight(1f)
+                .padding(bottom = 2.dp),
+            decorationBox = { innerTextField ->
+                Box {
+                    if (value.isEmpty()) Text(placeholder, color = TextTertiary, fontSize = 14.sp)
+                    innerTextField()
+                }
+            },
         )
     }
 }
@@ -367,8 +436,9 @@ private fun ClassReadOnlyRow(icon: @Composable () -> Unit, value: String) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .border(0.5.dp, DividerColor, RoundedCornerShape(8.dp))
-            .padding(horizontal = 12.dp, vertical = 14.dp),
+            .appShadow(cornerRadius = 10.dp)
+            .background(Color.White, RoundedCornerShape(8.dp))
+            .padding(horizontal = 12.dp, vertical = 12.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(10.dp),
     ) {
@@ -392,4 +462,17 @@ private fun ClassIconAction(
     ) {
         Icon(icon, contentDescription = description, tint = TextSecondary, modifier = Modifier.size(20.dp))
     }
+}
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
+
+private fun monthName(month: Int): String = listOf(
+    "January","February","March","April","May","June",
+    "July","August","September","October","November","December",
+)[month]
+
+private fun formatTime(h: Int, m: Int): String {
+    val amPm = if (h < 12) "AM" else "PM"
+    val h12  = when { h == 0 -> 12; h > 12 -> h - 12; else -> h }
+    return "$h12:${m.toString().padStart(2, '0')} $amPm"
 }

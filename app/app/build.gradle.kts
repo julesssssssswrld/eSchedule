@@ -82,4 +82,10 @@ dependencies {
   implementation(libs.androidx.navigation3.ui)
   implementation(libs.androidx.navigation3.runtime)
   implementation(libs.androidx.lifecycle.viewmodel.navigation3)
+
+  // CameraX
+  implementation(libs.camera.core)
+  implementation(libs.camera.camera2)
+  implementation(libs.camera.lifecycle)
+  implementation(libs.camera.view)
 }

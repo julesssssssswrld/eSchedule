@@ -32,6 +32,7 @@ import com.example.eschedule.ui.settings.SettingsScreen
 @Composable
 fun AppScaffold() {
     var currentTab by remember { mutableStateOf<TabRoute>(TabRoute.Home) }
+    var captureRequested by remember { mutableStateOf(false) }
 
     // Sheet state holders — null = closed
     var showAddReminder by remember { mutableStateOf(false) }
@@ -48,7 +49,10 @@ fun AppScaffold() {
             BottomNavBar(
                 currentTab = currentTab,
                 onTabSelected = { currentTab = it },
-                onScanClick = { currentTab = TabRoute.Home },
+                onScanClick = {
+                    if (currentTab == TabRoute.Scan) captureRequested = true
+                    else currentTab = TabRoute.Scan
+                },
             )
         },
     ) { innerPadding ->
@@ -64,14 +68,20 @@ fun AppScaffold() {
                 TabRoute.Home -> HomeScreen(
                     onClassClick = { viewClassId = it },
                     onReminderMoreClick = { viewReminderId = it },
+                    onReminderEditClick = { editReminderId = it },
                 )
                 TabRoute.Classes -> ClassesScreen(
                     onClassClick = { viewClassId = it },
                     onAddClass = { showAddClass = true },
                 )
+                TabRoute.Scan -> ScanScreen(
+                    captureRequested = captureRequested,
+                    onCaptureHandled = { captureRequested = false },
+                )
                 TabRoute.Reminders -> RemindersScreen(
                     onAddReminder = { showAddReminder = true },
                     onReminderMoreClick = { viewReminderId = it },
+                    onReminderEditClick = { editReminderId = it },
                 )
                 TabRoute.Settings -> SettingsScreen(
                     onItemClick = { /* future: navigate to sub-settings */ },

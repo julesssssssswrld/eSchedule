@@ -42,6 +42,7 @@ import com.example.eschedule.theme.UepYellow
 sealed interface TabRoute {
     data object Home : TabRoute
     data object Classes : TabRoute
+    data object Scan : TabRoute
     data object Reminders : TabRoute
     data object Settings : TabRoute
 }
@@ -161,8 +162,8 @@ fun BottomNavBar(
                     contentAlignment = Alignment.Center,
                 ) {
                     Icon(
-                        imageVector = AppIcons.Scan,
-                        contentDescription = "Scan",
+                        imageVector = if (currentTab == TabRoute.Scan) AppIcons.CameraPhoto else AppIcons.Scan,
+                        contentDescription = if (currentTab == TabRoute.Scan) "Capture" else "Scan",
                         tint = UepBlue,
                         modifier = Modifier.size(NavIconSize + 2.dp),
                     )
