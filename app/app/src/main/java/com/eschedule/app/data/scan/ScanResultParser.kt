@@ -67,15 +67,24 @@ object ScanResultParser {
     private val twelveHour = DateTimeFormatter.ofPattern("h:mm a", Locale.US)
     private val twentyFourHour = DateTimeFormatter.ofPattern("H:mm", Locale.US)
 
-    /** "01:00 PM", "1:00pm", "1 PM", "13:00" → time; null when it isn't one. */
+    /**
+     * "01:00 PM", "1:00pm", "1 PM", "13:00" → time; null when it isn't one.
+     * Philippine schedules write noon as "12:00 NN" (or "N", "Noon") and midnight as "12:00 MN".
+     */
     internal fun parseTime(raw: String): LocalTime? {
         var s = raw.trim().uppercase(Locale.US).replace(".", "")
         if (s.isEmpty()) return null
-        val meridiem = Regex("""\s*([AP]M)$""").find(s)
+        if (s == "NOON" || s == "NN") return LocalTime.NOON
+        val meridiem = Regex("""\s*(AM|PM|NN|NOON|N|MN)$""").find(s)
         if (meridiem != null) {
             s = s.removeSuffix(meridiem.value).trim()
+            if (s.isEmpty()) return null
             if (':' !in s) s += ":00"
-            return runCatching { LocalTime.parse("$s ${meridiem.groupValues[1]}", twelveHour) }.getOrNull()
+            val marker = when (meridiem.groupValues[1]) {
+                "AM", "MN" -> "AM"
+                else -> "PM"
+            }
+            return runCatching { LocalTime.parse("$s $marker", twelveHour) }.getOrNull()
         }
         if (':' !in s) return null
         return runCatching { LocalTime.parse(s, twentyFourHour) }.getOrNull()
@@ -85,30 +94,40 @@ object ScanResultParser {
 
     /** Longest first so "thu" wins over "t" and "th" over "t". */
     private val dayTokens: List<Pair<String, ScanDay>> = listOf(
-        "monday" to ScanDay.Monday, "mon" to ScanDay.Monday, "m" to ScanDay.Monday,
-        "tuesday" to ScanDay.Tuesday, "tues" to ScanDay.Tuesday, "tue" to ScanDay.Tuesday, "t" to ScanDay.Tuesday,
-        "wednesday" to ScanDay.Wednesday, "wed" to ScanDay.Wednesday, "w" to ScanDay.Wednesday,
+        "monday" to ScanDay.Monday, "mon" to ScanDay.Monday, "mo" to ScanDay.Monday, "m" to ScanDay.Monday,
+        "tuesday" to ScanDay.Tuesday, "tues" to ScanDay.Tuesday, "tue" to ScanDay.Tuesday,
+        "tu" to ScanDay.Tuesday, "t" to ScanDay.Tuesday,
+        "wednesday" to ScanDay.Wednesday, "wed" to ScanDay.Wednesday, "we" to ScanDay.Wednesday, "w" to ScanDay.Wednesday,
         "thursday" to ScanDay.Thursday, "thurs" to ScanDay.Thursday, "thur" to ScanDay.Thursday,
         "thu" to ScanDay.Thursday, "th" to ScanDay.Thursday,
-        "friday" to ScanDay.Friday, "fri" to ScanDay.Friday, "f" to ScanDay.Friday,
+        "friday" to ScanDay.Friday, "fri" to ScanDay.Friday, "fr" to ScanDay.Friday, "f" to ScanDay.Friday,
         "saturday" to ScanDay.Saturday, "sat" to ScanDay.Saturday, "sa" to ScanDay.Saturday, "s" to ScanDay.Saturday,
         "sunday" to ScanDay.Sunday, "sun" to ScanDay.Sunday, "su" to ScanDay.Sunday,
     ).sortedByDescending { it.first.length }
 
-    /** "TueThu" → Tue, Thu; "MWF" → Mon, Wed, Fri; "TTh" → Tue, Thu; anything unknown is skipped. */
+    /**
+     * "TueThu" → Tue, Thu; "MWF" → Mon, Wed, Fri; "TTh" → Tue, Thu; "M/W/F" → Mon, Wed, Fri.
+     *
+     * Each word must be made up entirely of day abbreviations, otherwise the whole word is skipped.
+     * That keeps "TBA" / "TBD" / "Online" from being read as days because they start with a day letter.
+     */
     internal fun parseDays(raw: String): List<ScanDay> {
-        val letters = raw.lowercase(Locale.US).filter { it in 'a'..'z' }
         val found = linkedSetOf<ScanDay>()
-        var i = 0
-        while (i < letters.length) {
-            val match = dayTokens.firstOrNull { letters.startsWith(it.first, i) }
-            if (match != null) {
-                found += match.second
-                i += match.first.length
-            } else {
-                i++
-            }
-        }
+        raw.lowercase(Locale.US)
+            .split(Regex("[^a-z]+"))
+            .filter { it.isNotEmpty() }
+            .forEach { word -> splitDays(word, 0)?.let { found += it } }
         return found.toList()
+    }
+
+    /** Splits [word] from [start] into day tokens, or null when some letters are not part of a day. */
+    private fun splitDays(word: String, start: Int): List<ScanDay>? {
+        if (start == word.length) return emptyList()
+        for ((token, day) in dayTokens) {
+            if (!word.startsWith(token, start)) continue
+            val rest = splitDays(word, start + token.length) ?: continue
+            return listOf(day) + rest
+        }
+        return null
     }
 }
