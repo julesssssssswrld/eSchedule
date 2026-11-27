@@ -24,6 +24,9 @@ class AlarmReceiver : BroadcastReceiver() {
             )
         }
 
+        // A reminder that alerted late (added inside its notice time) must not alert again on re-plan.
+        intent.getStringExtra(EXTRA_LATE_KEY)?.let { NotificationScheduler(context).markLateAlerted(it) }
+
         // A class repeats: plan its next meeting now that this one has been announced.
         (context.applicationContext as EScheduleApp).container.requestNotificationResync()
     }
@@ -36,6 +39,7 @@ class AlarmReceiver : BroadcastReceiver() {
         const val EXTRA_TEXT = "text"
         const val EXTRA_SOUND = "sound"
         const val EXTRA_VIBRATE = "vibrate"
+        const val EXTRA_LATE_KEY = "late_key"
     }
 }
 
